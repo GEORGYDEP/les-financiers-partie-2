@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le Paiement — Exercices interactifs</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0B1120;
+  --bg-card: #131B2E;
+  --bg-card-hover: #1A2540;
+  --surface: #1E293B;
+  --surface-light: #243047;
+  --border: #2A3A55;
+  --text: #E8ECF4;
+  --text-muted: #8895AA;
+  --text-dim: #5A6A80;
+  --primary: #3B82F6;
+  --primary-soft: #2563EB;
+  --primary-glow: rgba(59, 130, 246, 0.15);
+  --accent-green: #10B981;
+  --accent-green-soft: rgba(16, 185, 129, 0.12);
+  --accent-red: #EF4444;
+  --accent-red-soft: rgba(239, 68, 68, 0.12);
+  --accent-amber: #F59E0B;
+  --accent-amber-soft: rgba(245, 158, 11, 0.12);
+  --accent-purple: #8B5CF6;
+  --accent-purple-soft: rgba(139, 92, 246, 0.12);
+  --accent-cyan: #06B6D4;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(ellipse at 30% 20%, rgba(59,130,246,0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 80%, rgba(139,92,246,0.04) 0%, transparent 50%);
+  animation: bgFloat 20s ease-in-out infinite;
+  z-index: 0; pointer-events: none;
+}
+@keyframes bgFloat {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(2%, -1%); }
+}
+
+/* HEADER */
+.app-header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(11, 17, 32, 0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+}
+.header-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+}
+.logo {
+  display: flex; align-items: center; gap: 12px;
+  font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.15rem;
+  color: var(--text); text-decoration: none; cursor: pointer;
+}
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--primary), var(--accent-cyan));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 800; color: white;
+  box-shadow: 0 2px 12px rgba(59,130,246,0.3);
+}
+.progress-bar-container { flex: 1; max-width: 340px; margin: 0 24px; }
+.progress-info {
+  display: flex; justify-content: space-between;
+  font-size: 0.72rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 500;
+}
+.progress-track { height: 6px; background: var(--surface); border-radius: 3px; overflow: hidden; }
+.progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--primary), var(--accent-cyan));
+  border-radius: 3px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.score-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--accent-green-soft); color: var(--accent-green);
+  padding: 6px 14px; border-radius: 20px;
+  font-family: 'Space Mono', monospace; font-size: 0.82rem; font-weight: 700;
+}
+
+/* MAIN */
+.main-container {
+  max-width: 900px; margin: 0 auto; padding: 32px 20px 80px;
+  position: relative; z-index: 1;
+}
+
+/* WELCOME */
+.welcome-screen { text-align: center; padding: 60px 20px; animation: fadeInUp 0.6s ease-out; }
+.welcome-screen h1 {
+  font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; line-height: 1.1; margin-bottom: 12px;
+  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.welcome-screen .subtitle { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px; }
+.exercise-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px; margin-bottom: 36px;
+}
+.exercise-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px; text-align: left;
+  cursor: pointer; transition: var(--transition); position: relative; overflow: hidden;
+}
+.exercise-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  opacity: 0; transition: opacity 0.3s;
+}
+.exercise-card:hover {
+  background: var(--bg-card-hover); border-color: var(--primary);
+  transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,130,246,0.1);
+}
+.exercise-card:hover::before { opacity: 1; }
+.exercise-card[data-color="blue"]::before { background: linear-gradient(90deg, var(--primary), var(--accent-cyan)); }
+.exercise-card[data-color="green"]::before { background: linear-gradient(90deg, var(--accent-green), #34d399); }
+.exercise-card[data-color="purple"]::before { background: linear-gradient(90deg, var(--accent-purple), #a78bfa); }
+.exercise-card[data-color="amber"]::before { background: linear-gradient(90deg, var(--accent-amber), #fbbf24); }
+.exercise-card[data-color="cyan"]::before { background: linear-gradient(90deg, var(--accent-cyan), #22d3ee); }
+.exercise-card[data-color="red"]::before { background: linear-gradient(90deg, var(--accent-red), #f87171); }
+.exercise-card[data-color="pink"]::before { background: linear-gradient(90deg, #EC4899, #F472B6); }
+.card-num { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--text-dim); margin-bottom: 8px; letter-spacing: 1px; text-transform: uppercase; }
+.card-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 6px; }
+.card-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.45; }
+.card-status { margin-top: 14px; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; }
+.card-status.pending { color: var(--text-dim); }
+.card-status.completed { color: var(--accent-green); }
+.card-status.perfect { color: var(--accent-amber); }
+.btn-start-all {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-soft));
+  color: white; border: none; padding: 14px 32px; border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
+  cursor: pointer; transition: var(--transition);
+  box-shadow: 0 4px 20px rgba(59,130,246,0.3);
+}
+.btn-start-all:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(59,130,246,0.4); }
+
+/* EXERCISE SCREENS */
+.exercise-screen { display: none; animation: fadeInUp 0.5s ease-out; }
+.exercise-screen.active { display: block; }
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.ex-header { margin-bottom: 28px; }
+.ex-breadcrumb { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.ex-title { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.8rem; line-height: 1.15; margin-bottom: 8px; }
+.ex-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; }
+
+.info-box {
+  background: var(--primary-glow); border: 1px solid rgba(59,130,246,0.2);
+  border-radius: var(--radius); padding: 16px 20px; margin-bottom: 24px;
+  font-size: 0.88rem; line-height: 1.55;
+}
+.info-box .info-label { font-weight: 700; color: var(--primary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+
+/* QUESTIONS */
+.question-block {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px;
+  transition: var(--transition);
+}
+.question-block.correct { border-color: var(--accent-green); background: rgba(16, 185, 129, 0.05); }
+.question-block.incorrect { border-color: var(--accent-red); background: rgba(239, 68, 68, 0.05); }
+.q-number { font-family: 'Space Mono', monospace; font-size: 0.7rem; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 8px; }
+.q-text { font-size: 0.95rem; font-weight: 500; line-height: 1.5; margin-bottom: 16px; }
+.q-text strong { color: #fff; font-weight: 700; }
+.options-list { display: flex; flex-direction: column; gap: 8px; }
+.option-btn {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 12px 16px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  cursor: pointer; transition: var(--transition); text-align: left; width: 100%;
+}
+.option-btn:hover:not(.disabled) { background: var(--surface-light); border-color: var(--primary); }
+.opt-letter {
+  width: 28px; height: 28px; border-radius: 8px; background: var(--bg-card);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Mono', monospace; font-size: 0.75rem; font-weight: 700;
+  flex-shrink: 0; transition: var(--transition);
+}
+.option-btn.selected { border-color: var(--primary); background: var(--primary-glow); }
+.option-btn.selected .opt-letter { background: var(--primary); color: white; }
+.option-btn.correct-answer { border-color: var(--accent-green); background: var(--accent-green-soft); }
+.option-btn.correct-answer .opt-letter { background: var(--accent-green); color: white; }
+.option-btn.wrong-answer { border-color: var(--accent-red); background: var(--accent-red-soft); opacity: 0.7; }
+.option-btn.disabled { pointer-events: none; }
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.feedback {
+  display: none; margin-top: 14px; padding: 12px 16px;
+  border-radius: var(--radius); font-size: 0.85rem; line-height: 1.5;
+  animation: fadeInUp 0.3s ease-out;
+}
+.feedback.show { display: block; }
+.feedback.correct { background: var(--accent-green-soft); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.2); }
+.feedback.incorrect { background: var(--accent-red-soft); color: #fca5a5; border: 1px solid rgba(239,68,68,0.2); }
+
+/* INPUTS */
+.input-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.input-group label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
+.input-field {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  transition: var(--transition); outline: none;
+}
+.input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+.input-field.correct { border-color: var(--accent-green); }
+.input-field.incorrect { border-color: var(--accent-red); }
+
+/* IBAN DISPLAY */
+.iban-display { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; margin: 20px 0; }
+.iban-char {
+  width: 38px; height: 48px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Mono', monospace; font-size: 1.1rem; font-weight: 700;
+}
+.iban-char.highlight { border-color: var(--primary); background: var(--primary-glow); color: var(--primary); }
+.iban-char.amber { border-color: var(--accent-amber); background: var(--accent-amber-soft); color: var(--accent-amber); }
+.iban-char.purple { border-color: var(--accent-purple); background: var(--accent-purple-soft); color: var(--accent-purple); }
+.iban-spacer { width: 12px; }
+
+/* BANK STATEMENT */
+.bank-statement {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px;
+  position: sticky; top: 65px; z-index: 50;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.bs-header {
+  background: linear-gradient(135deg, #1a3a5c 0%, #0f2440 100%);
+  padding: 20px 24px; display: flex; justify-content: space-between; align-items: flex-start;
+}
+.bs-bank-name { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.3rem; color: #60a5fa; }
+.bs-label { font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+.bs-value { font-family: 'Space Mono', monospace; font-size: 0.9rem; color: var(--text); margin-top: 2px; }
+.bs-info-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--border); }
+.bs-balances {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 24px; border-bottom: 1px solid var(--border);
+}
+.bs-balance-box { text-align: center; }
+.bs-balance-label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.bs-balance-val { font-family: 'Space Mono', monospace; font-size: 1.15rem; font-weight: 700; margin-top: 4px; }
+.bs-arrow { font-size: 1.4rem; color: var(--text-dim); }
+.bs-table { width: 100%; font-size: 0.82rem; border-collapse: collapse; }
+.bs-table th {
+  background: var(--surface); padding: 10px 12px; text-align: left;
+  font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);
+}
+.bs-table td { padding: 10px 12px; border-bottom: 1px solid rgba(42,58,85,0.5); }
+.bs-table .credit { color: var(--accent-green); font-weight: 600; font-family: 'Space Mono', monospace; }
+.bs-table .debit { color: var(--accent-red); font-weight: 600; font-family: 'Space Mono', monospace; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: none; border-radius: var(--radius); padding: 12px 24px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; transition: var(--transition);
+}
+.btn-primary { background: var(--primary); color: white; box-shadow: 0 2px 12px rgba(59,130,246,0.3); }
+.btn-primary:hover { background: var(--primary-soft); transform: translateY(-1px); }
+.btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--surface-light); }
+.btn-success { background: var(--accent-green); color: white; }
+.action-row { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+
+/* RESULTS */
+.result-banner {
+  display: none; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 32px; text-align: center;
+  margin-top: 24px; animation: fadeInUp 0.5s ease-out;
+}
+.result-banner.show { display: block; }
+.result-score { font-family: 'Outfit', sans-serif; font-size: 3rem; font-weight: 800; }
+.result-score.good { color: var(--accent-green); }
+.result-score.ok { color: var(--accent-amber); }
+.result-score.poor { color: var(--accent-red); }
+.result-text { font-size: 1rem; color: var(--text-muted); margin: 8px 0 20px; }
+
+/* SCENARIO */
+.scenario-card {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--bg-card) 100%);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 20px 24px; margin-bottom: 16px;
+}
+.scenario-icon { font-size: 1.6rem; margin-bottom: 8px; }
+.scenario-text { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; }
+
+/* TRANSFER FORM */
+.transfer-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 24px; }
+.tf-header {
+  background: linear-gradient(135deg, #1a3a5c 0%, #0f2440 100%);
+  padding: 16px 24px; display: flex; justify-content: space-between; align-items: center;
+}
+.tf-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1rem; color: #60a5fa; }
+.tf-body { padding: 24px; }
+.tf-section { margin-bottom: 20px; }
+.tf-section-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.tf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* PHISHING */
+.phone-frame {
+  max-width: 340px; margin: 0 auto 20px;
+  background: var(--bg-card); border: 2px solid var(--border);
+  border-radius: 28px; padding: 12px; box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+}
+.phone-screen { background: var(--surface); border-radius: 18px; overflow: hidden; }
+.phone-topbar { background: var(--bg); padding: 8px 16px; display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); }
+.phone-content { padding: 16px; }
+.sms-bubble {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 14px 14px 14px 4px; padding: 12px 16px;
+  font-size: 0.85rem; line-height: 1.5;
+}
+.sms-sender { font-weight: 700; font-size: 0.78rem; margin-bottom: 6px; color: var(--text-muted); }
+.email-frame { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+.email-header-row { display: flex; gap: 8px; margin-bottom: 4px; font-size: 0.82rem; }
+.email-label { color: var(--text-dim); font-weight: 600; min-width: 35px; }
+.email-value { color: var(--text); }
+.email-suspicious { color: var(--accent-red); }
+.email-body { margin-top: 12px; font-size: 0.88rem; line-height: 1.6; }
+
+/* FINAL */
+.final-screen { display: none; text-align: center; padding: 60px 20px; animation: fadeInUp 0.6s ease-out; }
+.final-screen.active { display: block; }
+.trophy { font-size: 4rem; margin-bottom: 16px; }
+.final-score {
+  font-family: 'Outfit', sans-serif; font-size: 3.5rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 8px;
+}
+.final-text { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 32px; }
+.breakdown-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 10px; max-width: 600px; margin: 0 auto 32px;
+}
+.breakdown-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 10px; }
+.breakdown-num { font-family: 'Space Mono', monospace; font-size: 1.3rem; font-weight: 700; }
+.breakdown-label { font-size: 0.7rem; color: var(--text-dim); margin-top: 4px; }
+
+.mt-16 { margin-top: 16px; }
+
+@media (max-width: 600px) {
+  .welcome-screen h1 { font-size: 1.9rem; }
+  .exercise-grid { grid-template-columns: 1fr; }
+  .options-grid { grid-template-columns: 1fr; }
+  .bs-info-row { grid-template-columns: 1fr; gap: 8px; }
+  .iban-char { width: 30px; height: 38px; font-size: 0.9rem; }
+  .progress-bar-container { display: none; }
+  .bs-table { font-size: 0.72rem; }
+  .bs-table th, .bs-table td { padding: 8px 6px; }
+  .tf-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <a class="logo" onclick="showWelcome()">
+      <div class="logo-icon">€</div>
+      <span>Le Paiement</span>
+    </a>
+    <div class="progress-bar-container">
+      <div class="progress-info">
+        <span id="progressLabel">0 / 7 exercices</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+    <div class="score-badge">
+      <span>&#9733;</span>
+      <span id="totalScore">0 pts</span>
+    </div>
+  </div>
+</header>
+
+<main class="main-container">
+
+  <!-- WELCOME -->
+  <div class="welcome-screen" id="welcomeScreen">
+    <h1>Le Paiement Bancaire</h1>
+    <p class="subtitle">7 exercices interactifs pour maitriser le chapitre</p>
+    <div class="exercise-grid">
+      <div class="exercise-card" data-color="blue" onclick="startExercise(1)">
+        <div class="card-num">Exercice 01</div>
+        <div class="card-title">Fonctions bancaires &amp; comptes</div>
+        <div class="card-desc">Banque, compte a vue, epargne &mdash; les bases du systeme bancaire.</div>
+        <div class="card-status pending" id="status1">&#9675; A faire</div>
+      </div>
+      <div class="exercise-card" data-color="cyan" onclick="startExercise(2)">
+        <div class="card-num">Exercice 02</div>
+        <div class="card-title">Decoder un IBAN belge</div>
+        <div class="card-desc">Structure IBAN, codes bancaires et identification BIC.</div>
+        <div class="card-status pending" id="status2">&#9675; A faire</div>
+      </div>
+      <div class="exercise-card" data-color="green" onclick="startExercise(3)">
+        <div class="card-num">Exercice 03</div>
+        <div class="card-title">Lire un extrait de compte</div>
+        <div class="card-desc">Credit, debit, soldes &mdash; analyser un releve bancaire.</div>
+        <div class="card-status pending" id="status3">&#9675; A faire</div>
+      </div>
+      <div class="exercise-card" data-color="purple" onclick="startExercise(4)">
+        <div class="card-num">Exercice 04</div>
+        <div class="card-title">Completer un ordre de virement</div>
+        <div class="card-desc">Remplir correctement un formulaire de virement bancaire.</div>
+        <div class="card-status pending" id="status4">&#9675; A faire</div>
+      </div>
+      <div class="exercise-card" data-color="amber" onclick="startExercise(5)">
+        <div class="card-num">Exercice 05</div>
+        <div class="card-title">Virement, domiciliation ou ordre permanent ?</div>
+        <div class="card-desc">Identifier le bon moyen de paiement pour chaque situation.</div>
+        <div class="card-status pending" id="status5">&#9675; A faire</div>
+      </div>
+      <div class="exercise-card" data-color="red" onclick="startExercise(6)">
+        <div class="card-num">Exercice 06</div>
+        <div class="card-title">Carte de debit vs carte de credit</div>
+        <div class="card-desc">Comprendre les differences et choisir la bonne carte.</div>
+        <div class="card-status pending" id="status6">&#9675; A faire</div>
+      </div>
+      <div class="exercise-card" data-color="pink" onclick="startExercise(7)">
+        <div class="card-num">Exercice 07</div>
+        <div class="card-title">Securite &amp; reflexes anti-phishing</div>
+        <div class="card-desc">Detecter les arnaques et reagir face aux dangers bancaires.</div>
+        <div class="card-status pending" id="status7">&#9675; A faire</div>
+      </div>
+    </div>
+    <button class="btn-start-all" onclick="startExercise(1)">Commencer les exercices &#8594;</button>
+  </div>
+
+  <!-- EX1: Fonctions bancaires -->
+  <div class="exercise-screen" id="ex1">
+    <div class="ex-header">
+      <div class="ex-breadcrumb">Exercice 1 / 7</div>
+      <h2 class="ex-title">Fonctions bancaires &amp; comptes</h2>
+      <p class="ex-desc">Verifions ta maitrise des bases : les fonctions de la banque et les types de comptes.</p>
+    </div>
+    <div class="question-block" id="ex1q1">
+      <div class="q-number">Question 1</div>
+      <div class="q-text">Laquelle de ces activites n'est <strong>PAS</strong> une fonction principale d'une banque ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(1,1,this,'b')"><span class="opt-letter">A</span> Recolter de l'epargne</button>
+        <button class="option-btn" onclick="checkAnswer(1,1,this,'b')"><span class="opt-letter">B</span> Vendre des voitures d'occasion</button>
+        <button class="option-btn" onclick="checkAnswer(1,1,this,'b')"><span class="opt-letter">C</span> Preter de l'argent sous forme de credit</button>
+        <button class="option-btn" onclick="checkAnswer(1,1,this,'b')"><span class="opt-letter">D</span> Acheter et vendre des devises etrangeres</button>
+      </div>
+      <div class="feedback" id="fb-1-1"></div>
+    </div>
+    <div class="question-block" id="ex1q2">
+      <div class="q-number">Question 2</div>
+      <div class="q-text">Sophie recoit son salaire chaque mois. Sur quel type de compte est-il verse ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(1,2,this,'a')"><span class="opt-letter">A</span> Compte a vue (compte courant)</button>
+        <button class="option-btn" onclick="checkAnswer(1,2,this,'a')"><span class="opt-letter">B</span> Compte d'epargne</button>
+        <button class="option-btn" onclick="checkAnswer(1,2,this,'a')"><span class="opt-letter">C</span> Compte a terme</button>
+        <button class="option-btn" onclick="checkAnswer(1,2,this,'a')"><span class="opt-letter">D</span> Compte titres</button>
+      </div>
+      <div class="feedback" id="fb-1-2"></div>
+    </div>
+    <div class="question-block" id="ex1q3">
+      <div class="q-number">Question 3</div>
+      <div class="q-text">Quelle affirmation est <strong>vraie</strong> concernant le compte d'epargne ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(1,3,this,'c')"><span class="opt-letter">A</span> Il permet de recevoir une carte Bancontact</button>
+        <button class="option-btn" onclick="checkAnswer(1,3,this,'c')"><span class="opt-letter">B</span> L'argent n'est jamais disponible</button>
+        <button class="option-btn" onclick="checkAnswer(1,3,this,'c')"><span class="opt-letter">C</span> Il rapporte un taux de base et eventuellement une prime de fidelite</button>
+        <button class="option-btn" onclick="checkAnswer(1,3,this,'c')"><span class="opt-letter">D</span> Il sert uniquement a payer les factures</button>
+      </div>
+      <div class="feedback" id="fb-1-3"></div>
+    </div>
+    <div class="question-block" id="ex1q4">
+      <div class="q-number">Question 4</div>
+      <div class="q-text">Martin place 2 000 &#8364; qu'il ne compte pas utiliser pendant un an. Quel compte lui conseilles-tu ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(1,4,this,'b')"><span class="opt-letter">A</span> Compte a vue, car il peut retirer a tout moment</button>
+        <button class="option-btn" onclick="checkAnswer(1,4,this,'b')"><span class="opt-letter">B</span> Compte d'epargne, car il rapporte des interets (base + prime de fidelite apres 12 mois)</button>
+        <button class="option-btn" onclick="checkAnswer(1,4,this,'b')"><span class="opt-letter">C</span> Compte a vue, car les interets sont plus eleves</button>
+        <button class="option-btn" onclick="checkAnswer(1,4,this,'b')"><span class="opt-letter">D</span> Peu importe, les deux offrent les memes avantages</button>
+      </div>
+      <div class="feedback" id="fb-1-4"></div>
+    </div>
+    <div class="question-block" id="ex1q5">
+      <div class="q-number">Question 5</div>
+      <div class="q-text">Selectionne les <strong>trois</strong> banques belges parmi les suivantes :</div>
+      <div class="options-grid" id="ex1q5opts">
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">A</span> BNP Paribas Fortis</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">B</span> Deutsche Bank (DE)</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">C</span> Belfius</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">D</span> KBC</button>
+      </div>
+      <button class="btn btn-primary mt-16" onclick="checkMulti(1,5,'ex1q5opts',['a','c','d'])">Valider ma reponse</button>
+      <div class="feedback" id="fb-1-5"></div>
+    </div>
+    <div class="result-banner" id="result1">
+      <div class="result-score" id="score1"></div>
+      <div class="result-text" id="scoreText1"></div>
+      <div class="action-row" style="justify-content:center">
+        <button class="btn btn-secondary" onclick="showWelcome()">&#8592; Menu</button>
+        <button class="btn btn-primary" onclick="startExercise(2)">Exercice suivant &#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EX2: IBAN & BIC -->
+  <div class="exercise-screen" id="ex2">
+    <div class="ex-header">
+      <div class="ex-breadcrumb">Exercice 2 / 7</div>
+      <h2 class="ex-title">Decoder un IBAN belge</h2>
+      <p class="ex-desc">L'IBAN belge comporte 16 caracteres. Sais-tu identifier chaque partie ?</p>
+    </div>
+    <div class="info-box">
+      <div class="info-label">Rappel</div>
+      Un IBAN belge : <strong>Code pays + controle</strong> (4 car.) &middot; <strong>Code banque</strong> (3 chiffres) &middot; <strong>Numero de compte</strong> (7 chiffres) &middot; <strong>Chiffres de controle</strong> (2 chiffres).
+    </div>
+    <div class="question-block" id="ex2q1">
+      <div class="q-number">Question 1</div>
+      <div class="q-text">Identifie a quelle <strong>banque</strong> appartient cet IBAN :</div>
+      <div class="iban-display">
+        <div class="iban-char highlight">B</div><div class="iban-char highlight">E</div><div class="iban-char highlight">7</div><div class="iban-char highlight">1</div>
+        <div class="iban-spacer"></div>
+        <div class="iban-char amber">0</div><div class="iban-char amber">0</div><div class="iban-char amber">3</div>
+        <div class="iban-spacer"></div>
+        <div class="iban-char">5</div><div class="iban-char">4</div><div class="iban-char">2</div><div class="iban-char">8</div><div class="iban-char">9</div><div class="iban-char">1</div><div class="iban-char">0</div>
+        <div class="iban-spacer"></div>
+        <div class="iban-char purple">4</div><div class="iban-char purple">7</div>
+      </div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(2,1,this,'a')"><span class="opt-letter">A</span> BNP Paribas Fortis / bpost (codes 000-009)</button>
+        <button class="option-btn" onclick="checkAnswer(2,1,this,'a')"><span class="opt-letter">B</span> ING Belgique (codes 310-370)</button>
+        <button class="option-btn" onclick="checkAnswer(2,1,this,'a')"><span class="opt-letter">C</span> Belfius (codes 063-068)</button>
+        <button class="option-btn" onclick="checkAnswer(2,1,this,'a')"><span class="opt-letter">D</span> KBC / CBC (codes 725-735)</button>
+      </div>
+      <div class="feedback" id="fb-2-1"></div>
+    </div>
+    <div class="question-block" id="ex2q2">
+      <div class="q-number">Question 2</div>
+      <div class="q-text">Quel est le <strong>code BIC</strong> de Belfius ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(2,2,this,'c')"><span class="opt-letter">A</span> GEBABEBB</button>
+        <button class="option-btn" onclick="checkAnswer(2,2,this,'c')"><span class="opt-letter">B</span> BBRUBEBB</button>
+        <button class="option-btn" onclick="checkAnswer(2,2,this,'c')"><span class="opt-letter">C</span> GKCCBEBB</button>
+        <button class="option-btn" onclick="checkAnswer(2,2,this,'c')"><span class="opt-letter">D</span> KREDBEBB</button>
+      </div>
+      <div class="feedback" id="fb-2-2"></div>
+    </div>
+    <div class="question-block" id="ex2q3">
+      <div class="q-number">Question 3</div>
+      <div class="q-text">Un IBAN commence par <strong>BE45 363...</strong> A quelle banque appartient ce compte ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(2,3,this,'b')"><span class="opt-letter">A</span> KBC</button>
+        <button class="option-btn" onclick="checkAnswer(2,3,this,'b')"><span class="opt-letter">B</span> ING Belgique</button>
+        <button class="option-btn" onclick="checkAnswer(2,3,this,'b')"><span class="opt-letter">C</span> BNP Paribas Fortis</button>
+        <button class="option-btn" onclick="checkAnswer(2,3,this,'b')"><span class="opt-letter">D</span> Belfius</button>
+      </div>
+      <div class="feedback" id="fb-2-3"></div>
+    </div>
+    <div class="question-block" id="ex2q4">
+      <div class="q-number">Question 4</div>
+      <div class="q-text">Combien de caracteres comporte un IBAN belge ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(2,4,this,'b')"><span class="opt-letter">A</span> 12</button>
+        <button class="option-btn" onclick="checkAnswer(2,4,this,'b')"><span class="opt-letter">B</span> 16</button>
+        <button class="option-btn" onclick="checkAnswer(2,4,this,'b')"><span class="opt-letter">C</span> 20</button>
+        <button class="option-btn" onclick="checkAnswer(2,4,this,'b')"><span class="opt-letter">D</span> 24</button>
+      </div>
+      <div class="feedback" id="fb-2-4"></div>
+    </div>
+    <div class="question-block" id="ex2q5">
+      <div class="q-number">Question 5</div>
+      <div class="q-text">L'ancien numero de Marc est <strong>725-0098765-43</strong>. A quelle banque appartient-il ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(2,5,this,'d')"><span class="opt-letter">A</span> ING</button>
+        <button class="option-btn" onclick="checkAnswer(2,5,this,'d')"><span class="opt-letter">B</span> Belfius</button>
+        <button class="option-btn" onclick="checkAnswer(2,5,this,'d')"><span class="opt-letter">C</span> BNP Paribas Fortis</button>
+        <button class="option-btn" onclick="checkAnswer(2,5,this,'d')"><span class="opt-letter">D</span> KBC / CBC (codes 725-735)</button>
+      </div>
+      <div class="feedback" id="fb-2-5"></div>
+    </div>
+    <div class="result-banner" id="result2">
+      <div class="result-score" id="score2"></div>
+      <div class="result-text" id="scoreText2"></div>
+      <div class="action-row" style="justify-content:center">
+        <button class="btn btn-secondary" onclick="showWelcome()">&#8592; Menu</button>
+        <button class="btn btn-primary" onclick="startExercise(3)">Exercice suivant &#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EX3: Extrait de compte -->
+  <div class="exercise-screen" id="ex3">
+    <div class="ex-header">
+      <div class="ex-breadcrumb">Exercice 3 / 7</div>
+      <h2 class="ex-title">Lire un extrait de compte</h2>
+      <p class="ex-desc">Analyse l'extrait de compte de Thomas Lambert et reponds aux questions.</p>
+    </div>
+    <div class="bank-statement">
+      <div class="bs-header">
+        <div><div class="bs-bank-name">KBC</div><div style="font-size:0.75rem;color:#64748b;margin-top:2px">Banque &amp; Assurances</div></div>
+        <div style="text-align:right"><div style="font-size:0.85rem;font-weight:700">EXTRAIT DE COMPTE</div><div style="font-size:0.72rem;color:#64748b">n&#176; 2026/002</div></div>
+      </div>
+      <div class="bs-info-row">
+        <div><div class="bs-label">Titulaire</div><div class="bs-value">Thomas LAMBERT</div></div>
+        <div><div class="bs-label">IBAN</div><div class="bs-value">BE23 7250 4312 8956</div></div>
+        <div><div class="bs-label">Periode</div><div class="bs-value">01/02 au 28/02/2026</div></div>
+      </div>
+      <div class="bs-balances">
+        <div class="bs-balance-box"><div class="bs-balance-label">Ancien solde (01/02)</div><div class="bs-balance-val" style="color:var(--accent-green)">2.340,00 &#8364;</div></div>
+        <div class="bs-arrow">&#8594;</div>
+        <div class="bs-balance-box"><div class="bs-balance-label">Nouveau solde (28/02)</div><div class="bs-balance-val" style="color:var(--primary)">?</div></div>
+      </div>
+      <table class="bs-table">
+        <thead><tr><th>Date</th><th>Description</th><th>Communication</th><th>Credit (+)</th><th>Debit (-)</th></tr></thead>
+        <tbody>
+          <tr><td>02/02</td><td>Virement recu - Salaire</td><td>Salaire fevrier 2026</td><td class="credit">1.850,00 &#8364;</td><td></td></tr>
+          <tr><td>05/02</td><td>Ordre permanent - Loyer</td><td>+++210/0002/26012+++</td><td></td><td class="debit">750,00 &#8364;</td></tr>
+          <tr><td>07/02</td><td>Domiciliation - Proximus</td><td>Facture mobile fev.</td><td></td><td class="debit">38,50 &#8364;</td></tr>
+          <tr><td>10/02</td><td>Paiement Bancontact - Colruyt</td><td>Courses alimentaires</td><td></td><td class="debit">112,30 &#8364;</td></tr>
+          <tr><td>14/02</td><td>Virement recu - Remboursement</td><td>Part cadeau collegues</td><td class="credit">25,00 &#8364;</td><td></td></tr>
+          <tr><td>18/02</td><td>Domiciliation - Engie</td><td>Gaz &amp; electricite</td><td></td><td class="debit">145,00 &#8364;</td></tr>
+          <tr><td>22/02</td><td>Retrait Bancontact - ATM</td><td>Distributeur Mons</td><td></td><td class="debit">80,00 &#8364;</td></tr>
+          <tr><td>25/02</td><td>Domiciliation - Assurance auto</td><td>Prime mensuelle AXA</td><td></td><td class="debit">95,00 &#8364;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="question-block" id="ex3q1">
+      <div class="q-number">Question 1</div>
+      <div class="q-text">Quel est le <strong>total des credits</strong> (entrees d'argent) du mois ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(3,1,this,'c')"><span class="opt-letter">A</span> 1 850,00 &#8364;</button>
+        <button class="option-btn" onclick="checkAnswer(3,1,this,'c')"><span class="opt-letter">B</span> 2 340,00 &#8364;</button>
+        <button class="option-btn" onclick="checkAnswer(3,1,this,'c')"><span class="opt-letter">C</span> 1 875,00 &#8364;</button>
+        <button class="option-btn" onclick="checkAnswer(3,1,this,'c')"><span class="opt-letter">D</span> 1 900,00 &#8364;</button>
+      </div>
+      <div class="feedback" id="fb-3-1"></div>
+    </div>
+    <div class="question-block" id="ex3q2">
+      <div class="q-number">Question 2</div>
+      <div class="q-text">Quel est le <strong>total des debits</strong> (sorties d'argent) du mois ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(3,2,this,'b')"><span class="opt-letter">A</span> 1 100,80 &#8364;</button>
+        <button class="option-btn" onclick="checkAnswer(3,2,this,'b')"><span class="opt-letter">B</span> 1 220,80 &#8364;</button>
+        <button class="option-btn" onclick="checkAnswer(3,2,this,'b')"><span class="opt-letter">C</span> 1 320,80 &#8364;</button>
+        <button class="option-btn" onclick="checkAnswer(3,2,this,'b')"><span class="opt-letter">D</span> 1 180,50 &#8364;</button>
+      </div>
+      <div class="feedback" id="fb-3-2"></div>
+    </div>
+    <div class="question-block" id="ex3q3">
+      <div class="q-number">Question 3</div>
+      <div class="q-text">Calcule le <strong>nouveau solde</strong> au 28/02 :</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(3,3,this,'a')"><span class="opt-letter">A</span> 2 994,20 &#8364;</button>
+        <button class="option-btn" onclick="checkAnswer(3,3,this,'a')"><span class="opt-letter">B</span> 2 874,20 &#8364;</button>
+        <button class="option-btn" onclick="checkAnswer(3,3,this,'a')"><span class="opt-letter">C</span> 3 094,20 &#8364;</button>
+        <button class="option-btn" onclick="checkAnswer(3,3,this,'a')"><span class="opt-letter">D</span> 2 654,20 &#8364;</button>
+      </div>
+      <div class="feedback" id="fb-3-3"></div>
+    </div>
+    <div class="question-block" id="ex3q4">
+      <div class="q-number">Question 4</div>
+      <div class="q-text">La banque de Thomas est :</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(3,4,this,'d')"><span class="opt-letter">A</span> Belfius</button>
+        <button class="option-btn" onclick="checkAnswer(3,4,this,'d')"><span class="opt-letter">B</span> ING</button>
+        <button class="option-btn" onclick="checkAnswer(3,4,this,'d')"><span class="opt-letter">C</span> BNP Paribas Fortis</button>
+        <button class="option-btn" onclick="checkAnswer(3,4,this,'d')"><span class="opt-letter">D</span> KBC (code 725 dans l'IBAN)</button>
+      </div>
+      <div class="feedback" id="fb-3-4"></div>
+    </div>
+    <div class="question-block" id="ex3q5">
+      <div class="q-number">Question 5</div>
+      <div class="q-text">Parmi les operations, lesquelles sont des <strong>domiciliations</strong> ?</div>
+      <div class="options-grid" id="ex3q5opts">
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">A</span> Proximus</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">B</span> Loyer</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">C</span> Engie</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">D</span> Assurance AXA</button>
+      </div>
+      <button class="btn btn-primary mt-16" onclick="checkMulti(3,5,'ex3q5opts',['a','c','d'])">Valider</button>
+      <div class="feedback" id="fb-3-5"></div>
+    </div>
+    <div class="result-banner" id="result3">
+      <div class="result-score" id="score3"></div>
+      <div class="result-text" id="scoreText3"></div>
+      <div class="action-row" style="justify-content:center">
+        <button class="btn btn-secondary" onclick="showWelcome()">&#8592; Menu</button>
+        <button class="btn btn-primary" onclick="startExercise(4)">Exercice suivant &#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EX4: Virement -->
+  <div class="exercise-screen" id="ex4">
+    <div class="ex-header">
+      <div class="ex-breadcrumb">Exercice 4 / 7</div>
+      <h2 class="ex-title">Completer un ordre de virement</h2>
+      <p class="ex-desc">Mme Claire Henard (Belfius, BE45 0630 1234 5678) doit payer 480,00 &#8364; a Duval &amp; Fils (ING, BE68 3100 7890 1234). Communication : +++150/2026/00148+++</p>
+    </div>
+    <div class="transfer-form">
+      <div class="tf-header">
+        <div class="tf-title">ORDRE DE VIREMENT</div>
+        <div style="color:#60a5fa;font-weight:700;font-size:0.9rem">Belfius</div>
+      </div>
+      <div class="tf-body">
+        <div class="tf-section">
+          <div class="tf-section-title">Donneur d'ordre (debiteur)</div>
+          <div class="tf-row">
+            <div class="input-group"><label>Nom</label><input type="text" class="input-field" id="ex4-nom-do" placeholder="Nom complet..."></div>
+            <div class="input-group"><label>IBAN</label><input type="text" class="input-field" id="ex4-iban-do" placeholder="BE__ ____ ____ ____"></div>
+          </div>
+        </div>
+        <div class="tf-section">
+          <div class="tf-section-title">Beneficiaire (creancier)</div>
+          <div class="tf-row">
+            <div class="input-group"><label>Nom</label><input type="text" class="input-field" id="ex4-nom-ben" placeholder="Nom complet..."></div>
+            <div class="input-group"><label>IBAN</label><input type="text" class="input-field" id="ex4-iban-ben" placeholder="BE__ ____ ____ ____"></div>
+          </div>
+        </div>
+        <div class="tf-section">
+          <div class="tf-section-title">Details du paiement</div>
+          <div class="tf-row">
+            <div class="input-group"><label>Montant (&#8364;)</label><input type="text" class="input-field" id="ex4-montant" placeholder="0,00"></div>
+            <div class="input-group"><label>Communication structuree</label><input type="text" class="input-field" id="ex4-comm" placeholder="+++___/____/_____+++"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="checkEx4()">Verifier le formulaire</button>
+    <div class="feedback" id="fb-4-1" style="margin-top:16px"></div>
+
+    <div class="question-block mt-16" id="ex4q2">
+      <div class="q-number">Question bonus</div>
+      <div class="q-text">Qui est le <strong>donneur d'ordre</strong> et qui est le <strong>beneficiaire</strong> ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(4,2,this,'a')"><span class="opt-letter">A</span> Donneur d'ordre = Claire Henard (debiteur) / Beneficiaire = Duval &amp; Fils (creancier)</button>
+        <button class="option-btn" onclick="checkAnswer(4,2,this,'a')"><span class="opt-letter">B</span> Donneur d'ordre = Duval &amp; Fils / Beneficiaire = Claire Henard</button>
+        <button class="option-btn" onclick="checkAnswer(4,2,this,'a')"><span class="opt-letter">C</span> Donneur d'ordre = La banque Belfius / Beneficiaire = Duval &amp; Fils</button>
+      </div>
+      <div class="feedback" id="fb-4-2"></div>
+    </div>
+    <div class="question-block" id="ex4q3">
+      <div class="q-number">Question bonus 2</div>
+      <div class="q-text">Quelles <strong>regles</strong> s'appliquent aux documents bancaires papier ?</div>
+      <div class="options-grid" id="ex4q3opts">
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">A</span> Aucune rature</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">B</span> Ecrire en rouge</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">C</span> Encre noire ou bleue</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">D</span> Montant a droite</button>
+      </div>
+      <button class="btn btn-primary mt-16" onclick="checkMulti(4,3,'ex4q3opts',['a','c','d'])">Valider</button>
+      <div class="feedback" id="fb-4-3"></div>
+    </div>
+    <div class="result-banner" id="result4">
+      <div class="result-score" id="score4"></div>
+      <div class="result-text" id="scoreText4"></div>
+      <div class="action-row" style="justify-content:center">
+        <button class="btn btn-secondary" onclick="showWelcome()">&#8592; Menu</button>
+        <button class="btn btn-primary" onclick="startExercise(5)">Exercice suivant &#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EX5: Virement / Domiciliation / Ordre permanent -->
+  <div class="exercise-screen" id="ex5">
+    <div class="ex-header">
+      <div class="ex-breadcrumb">Exercice 5 / 7</div>
+      <h2 class="ex-title">Virement, domiciliation ou ordre permanent ?</h2>
+      <p class="ex-desc">Identifie le moyen de paiement le plus adapte a chaque situation.</p>
+    </div>
+    <div class="info-box">
+      <div class="info-label">Difference cle</div>
+      <strong>Virement</strong> = ponctuel, initiative du debiteur &middot; <strong>Domiciliation</strong> = recurrent, montant variable, initiative du creancier &middot; <strong>Ordre permanent</strong> = recurrent, montant fixe, initiative du debiteur.
+    </div>
+    <div class="question-block" id="ex5q1">
+      <div class="q-number">Situation 1</div>
+      <div class="scenario-card"><div class="scenario-icon">&#127968;</div><div class="scenario-text">Lea paie chaque mois un loyer de <strong>620 &#8364;</strong> a son proprietaire. Le montant est toujours le meme.</div></div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(5,1,this,'c')"><span class="opt-letter">A</span> Virement bancaire</button>
+        <button class="option-btn" onclick="checkAnswer(5,1,this,'c')"><span class="opt-letter">B</span> Domiciliation</button>
+        <button class="option-btn" onclick="checkAnswer(5,1,this,'c')"><span class="opt-letter">C</span> Ordre permanent</button>
+      </div>
+      <div class="feedback" id="fb-5-1"></div>
+    </div>
+    <div class="question-block" id="ex5q2">
+      <div class="q-number">Situation 2</div>
+      <div class="scenario-card"><div class="scenario-icon">&#128241;</div><div class="scenario-text">Lucas autorise Proximus a prelever automatiquement ses factures. Le montant <strong>varie</strong> chaque mois.</div></div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(5,2,this,'b')"><span class="opt-letter">A</span> Virement bancaire</button>
+        <button class="option-btn" onclick="checkAnswer(5,2,this,'b')"><span class="opt-letter">B</span> Domiciliation</button>
+        <button class="option-btn" onclick="checkAnswer(5,2,this,'b')"><span class="opt-letter">C</span> Ordre permanent</button>
+      </div>
+      <div class="feedback" id="fb-5-2"></div>
+    </div>
+    <div class="question-block" id="ex5q3">
+      <div class="q-number">Situation 3</div>
+      <div class="scenario-card"><div class="scenario-icon">&#128722;</div><div class="scenario-text">Emma doit payer <strong>une facture unique</strong> de 325 &#8364; pour un meuble via son app bancaire.</div></div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(5,3,this,'a')"><span class="opt-letter">A</span> Virement bancaire</button>
+        <button class="option-btn" onclick="checkAnswer(5,3,this,'a')"><span class="opt-letter">B</span> Domiciliation</button>
+        <button class="option-btn" onclick="checkAnswer(5,3,this,'a')"><span class="opt-letter">C</span> Ordre permanent</button>
+      </div>
+      <div class="feedback" id="fb-5-3"></div>
+    </div>
+    <div class="question-block" id="ex5q4">
+      <div class="q-number">Situation 4</div>
+      <div class="scenario-card"><div class="scenario-icon">&#9889;</div><div class="scenario-text">Marc a signe un mandat pour qu'Engie preleve ses factures de gaz. Ce mois-ci il a <strong>consomme plus</strong>.</div></div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(5,4,this,'b')"><span class="opt-letter">A</span> Virement bancaire</button>
+        <button class="option-btn" onclick="checkAnswer(5,4,this,'b')"><span class="opt-letter">B</span> Domiciliation</button>
+        <button class="option-btn" onclick="checkAnswer(5,4,this,'b')"><span class="opt-letter">C</span> Ordre permanent</button>
+      </div>
+      <div class="feedback" id="fb-5-4"></div>
+    </div>
+    <div class="question-block" id="ex5q5">
+      <div class="q-number">Situation 5</div>
+      <div class="scenario-card"><div class="scenario-icon">&#128176;</div><div class="scenario-text">Julie transfere automatiquement <strong>150 &#8364;</strong> chaque mois vers son compte d'epargne. Montant fixe.</div></div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(5,5,this,'c')"><span class="opt-letter">A</span> Virement bancaire</button>
+        <button class="option-btn" onclick="checkAnswer(5,5,this,'c')"><span class="opt-letter">B</span> Domiciliation</button>
+        <button class="option-btn" onclick="checkAnswer(5,5,this,'c')"><span class="opt-letter">C</span> Ordre permanent</button>
+      </div>
+      <div class="feedback" id="fb-5-5"></div>
+    </div>
+    <div class="question-block" id="ex5q6">
+      <div class="q-number">Situation 6</div>
+      <div class="scenario-card"><div class="scenario-icon">&#127974;</div><div class="scenario-text">Marc peut-il annuler sa domiciliation chez Engie s'il change de fournisseur ?</div></div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(5,6,this,'a')"><span class="opt-letter">A</span> Oui, a tout moment via sa banque</button>
+        <button class="option-btn" onclick="checkAnswer(5,6,this,'a')"><span class="opt-letter">B</span> Non, une domiciliation est definitive</button>
+        <button class="option-btn" onclick="checkAnswer(5,6,this,'a')"><span class="opt-letter">C</span> Seulement apres 12 mois</button>
+      </div>
+      <div class="feedback" id="fb-5-6"></div>
+    </div>
+    <div class="result-banner" id="result5">
+      <div class="result-score" id="score5"></div>
+      <div class="result-text" id="scoreText5"></div>
+      <div class="action-row" style="justify-content:center">
+        <button class="btn btn-secondary" onclick="showWelcome()">&#8592; Menu</button>
+        <button class="btn btn-primary" onclick="startExercise(6)">Exercice suivant &#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EX6: Carte debit vs credit -->
+  <div class="exercise-screen" id="ex6">
+    <div class="ex-header">
+      <div class="ex-breadcrumb">Exercice 6 / 7</div>
+      <h2 class="ex-title">Carte de debit vs carte de credit</h2>
+      <p class="ex-desc">Paiements electroniques, cartes et technologies : teste tes connaissances.</p>
+    </div>
+    <div class="question-block" id="ex6q1">
+      <div class="q-number">Question 1</div>
+      <div class="q-text">Noemie paie ses courses au Delhaize avec sa carte Bancontact (35,60 &#8364;). Quand l'argent sera-t-il <strong>debite</strong> ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(6,1,this,'a')"><span class="opt-letter">A</span> Immediatement (carte de debit)</button>
+        <button class="option-btn" onclick="checkAnswer(6,1,this,'a')"><span class="opt-letter">B</span> A la fin du mois</button>
+        <button class="option-btn" onclick="checkAnswer(6,1,this,'a')"><span class="opt-letter">C</span> Apres 48 heures</button>
+        <button class="option-btn" onclick="checkAnswer(6,1,this,'a')"><span class="opt-letter">D</span> Quand elle le decide</button>
+      </div>
+      <div class="feedback" id="fb-6-1"></div>
+    </div>
+    <div class="question-block" id="ex6q2">
+      <div class="q-number">Question 2</div>
+      <div class="q-text">Hugo reserve un hotel en Espagne avec sa carte <strong>Visa</strong> (280 &#8364;). Quand sera-t-il debite ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(6,2,this,'b')"><span class="opt-letter">A</span> Immediatement</button>
+        <button class="option-btn" onclick="checkAnswer(6,2,this,'b')"><span class="opt-letter">B</span> En fin de mois (carte de credit = paiement differe)</button>
+        <button class="option-btn" onclick="checkAnswer(6,2,this,'b')"><span class="opt-letter">C</span> Jamais, c'est une reservation</button>
+      </div>
+      <div class="feedback" id="fb-6-2"></div>
+    </div>
+    <div class="question-block" id="ex6q3">
+      <div class="q-number">Question 3</div>
+      <div class="q-text">Quel est le principal <strong>risque</strong> lie a la carte de credit ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(6,3,this,'c')"><span class="opt-letter">A</span> Elle n'est pas acceptee en Belgique</button>
+        <button class="option-btn" onclick="checkAnswer(6,3,this,'c')"><span class="opt-letter">B</span> Elle ne fonctionne pas en ligne</button>
+        <button class="option-btn" onclick="checkAnswer(6,3,this,'c')"><span class="opt-letter">C</span> Risque d'endettement</button>
+        <button class="option-btn" onclick="checkAnswer(6,3,this,'c')"><span class="opt-letter">D</span> Le code PIN est visible sur la carte</button>
+      </div>
+      <div class="feedback" id="fb-6-3"></div>
+    </div>
+    <div class="question-block" id="ex6q4">
+      <div class="q-number">Question 4</div>
+      <div class="q-text">Lina paie un cafe a 3,50 &#8364; en approchant sa carte du terminal. Quelle technologie ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(6,4,this,'b')"><span class="opt-letter">A</span> Bluetooth</button>
+        <button class="option-btn" onclick="checkAnswer(6,4,this,'b')"><span class="opt-letter">B</span> NFC (Near Field Communication)</button>
+        <button class="option-btn" onclick="checkAnswer(6,4,this,'b')"><span class="opt-letter">C</span> WiFi</button>
+        <button class="option-btn" onclick="checkAnswer(6,4,this,'b')"><span class="opt-letter">D</span> QR code</button>
+      </div>
+      <div class="feedback" id="fb-6-4"></div>
+    </div>
+    <div class="question-block" id="ex6q5">
+      <div class="q-number">Question 5</div>
+      <div class="q-text">Quelle app permet d'envoyer de l'argent <strong>entre amis</strong> en Belgique ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(6,5,this,'a')"><span class="opt-letter">A</span> Payconiq by Bancontact</button>
+        <button class="option-btn" onclick="checkAnswer(6,5,this,'a')"><span class="opt-letter">B</span> Apple Pay</button>
+        <button class="option-btn" onclick="checkAnswer(6,5,this,'a')"><span class="opt-letter">C</span> Google Pay</button>
+        <button class="option-btn" onclick="checkAnswer(6,5,this,'a')"><span class="opt-letter">D</span> La carte Bancontact sans contact</button>
+      </div>
+      <div class="feedback" id="fb-6-5"></div>
+    </div>
+    <div class="question-block" id="ex6q6">
+      <div class="q-number">Question 6</div>
+      <div class="q-text">Retrait au distributeur : quelle est la <strong>bonne sequence</strong> ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(6,6,this,'b')"><span class="opt-letter">A</span> Montant &#8594; Carte &#8594; PIN &#8594; Recuperer</button>
+        <button class="option-btn" onclick="checkAnswer(6,6,this,'b')"><span class="opt-letter">B</span> Carte &#8594; Langue &#8594; PIN &#8594; Montant &#8594; Recuperer billets ET carte</button>
+        <button class="option-btn" onclick="checkAnswer(6,6,this,'b')"><span class="opt-letter">C</span> Carte &#8594; Montant &#8594; Recuperer &#8594; PIN</button>
+      </div>
+      <div class="feedback" id="fb-6-6"></div>
+    </div>
+    <div class="result-banner" id="result6">
+      <div class="result-score" id="score6"></div>
+      <div class="result-text" id="scoreText6"></div>
+      <div class="action-row" style="justify-content:center">
+        <button class="btn btn-secondary" onclick="showWelcome()">&#8592; Menu</button>
+        <button class="btn btn-primary" onclick="startExercise(7)">Exercice suivant &#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EX7: Securite -->
+  <div class="exercise-screen" id="ex7">
+    <div class="ex-header">
+      <div class="ex-breadcrumb">Exercice 7 / 7</div>
+      <h2 class="ex-title">Securite &amp; reflexes anti-phishing</h2>
+      <p class="ex-desc">Sais-tu reconnaitre une arnaque et reagir correctement ?</p>
+    </div>
+    <div class="question-block" id="ex7q1">
+      <div class="q-number">Situation 1 &mdash; SMS suspect</div>
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="phone-topbar"><span>12:34</span><span>4G</span></div>
+          <div class="phone-content">
+            <div class="sms-sender">&#128233; +32 470 00 00 00</div>
+            <div class="sms-bubble">
+              <strong>Belfius Banque :</strong> Activite suspecte detectee ! Cliquez immediatement : <span style="color:var(--primary);text-decoration:underline">http://belfius-secure-check.xyz/login</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="q-text">Quelle est la <strong>bonne reaction</strong> ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(7,1,this,'c')"><span class="opt-letter">A</span> Cliquer sur le lien pour verifier</button>
+        <button class="option-btn" onclick="checkAnswer(7,1,this,'c')"><span class="opt-letter">B</span> Repondre au SMS</button>
+        <button class="option-btn" onclick="checkAnswer(7,1,this,'c')"><span class="opt-letter">C</span> Ne PAS cliquer, supprimer et contacter Belfius via le numero officiel</button>
+        <button class="option-btn" onclick="checkAnswer(7,1,this,'c')"><span class="opt-letter">D</span> Transferer le lien a un ami</button>
+      </div>
+      <div class="feedback" id="fb-7-1"></div>
+    </div>
+    <div class="question-block" id="ex7q2">
+      <div class="q-number">Situation 2 &mdash; Perte de carte</div>
+      <div class="scenario-card"><div class="scenario-icon">&#128552;</div><div class="scenario-text">Samedi soir 23h, Antoine a perdu sa carte Bancontact. La banque est fermee.</div></div>
+      <div class="q-text">Que doit-il faire <strong>en premier</strong> ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(7,2,this,'b')"><span class="opt-letter">A</span> Attendre lundi</button>
+        <button class="option-btn" onclick="checkAnswer(7,2,this,'b')"><span class="opt-letter">B</span> Appeler Card Stop au 078 170 170 (24h/24)</button>
+        <button class="option-btn" onclick="checkAnswer(7,2,this,'b')"><span class="opt-letter">C</span> Envoyer un e-mail a sa banque</button>
+        <button class="option-btn" onclick="checkAnswer(7,2,this,'b')"><span class="opt-letter">D</span> Publier sur les reseaux sociaux</button>
+      </div>
+      <div class="feedback" id="fb-7-2"></div>
+    </div>
+    <div class="question-block" id="ex7q3">
+      <div class="q-number">Situation 3 &mdash; Au distributeur</div>
+      <div class="scenario-card"><div class="scenario-icon">&#127975;</div><div class="scenario-text">Un inconnu s'approche de Sarah au distributeur : &laquo; Votre carte est bloquee, montrez-moi votre code. &raquo;</div></div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(7,3,this,'a')"><span class="opt-letter">A</span> Refuser et ne JAMAIS montrer son code PIN</button>
+        <button class="option-btn" onclick="checkAnswer(7,3,this,'a')"><span class="opt-letter">B</span> Accepter son aide</button>
+        <button class="option-btn" onclick="checkAnswer(7,3,this,'a')"><span class="opt-letter">C</span> Lui donner sa carte</button>
+      </div>
+      <div class="feedback" id="fb-7-3"></div>
+    </div>
+    <div class="question-block" id="ex7q4">
+      <div class="q-number">Situation 4 &mdash; E-mail suspect</div>
+      <div class="email-frame">
+        <div class="email-header-row"><span class="email-label">De :</span><span class="email-value email-suspicious">service@kbc-verification-urgente.com</span></div>
+        <div class="email-header-row"><span class="email-label">Objet :</span><span class="email-value">&#9888; URGENT : Carte bloquee dans 24h</span></div>
+        <div class="email-body">Cher client, une tentative de fraude a ete detectee. Confirmez vos donnees incluant votre code PIN.<br><br><span style="background:var(--primary);color:white;padding:6px 16px;border-radius:6px;display:inline-block">Verifier mon compte</span></div>
+      </div>
+      <div class="q-text">Quels <strong>indices de phishing</strong> reperes-tu ?</div>
+      <div class="options-grid" id="ex7q4opts">
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">A</span> Adresse e-mail suspecte</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">B</span> Ton urgent / menacant</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">C</span> Demande le code PIN</button>
+        <button class="option-btn multi" onclick="toggleMulti(this)"><span class="opt-letter">D</span> Tout semble normal</button>
+      </div>
+      <button class="btn btn-primary mt-16" onclick="checkMulti(7,4,'ex7q4opts',['a','b','c'])">Valider</button>
+      <div class="feedback" id="fb-7-4"></div>
+    </div>
+    <div class="question-block" id="ex7q5">
+      <div class="q-number">Question 5</div>
+      <div class="q-text">Apres Card Stop, quelles sont les <strong>etapes suivantes</strong> dans le bon ordre ?</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(7,5,this,'b')"><span class="opt-letter">A</span> Nouvelle carte &#8594; Police &#8594; Numero de dossier</button>
+        <button class="option-btn" onclick="checkAnswer(7,5,this,'b')"><span class="opt-letter">B</span> Numero de dossier &#8594; Police (24h) &#8594; Contacter sa banque</button>
+        <button class="option-btn" onclick="checkAnswer(7,5,this,'b')"><span class="opt-letter">C</span> Banque &#8594; Attendre &#8594; Police</button>
+      </div>
+      <div class="feedback" id="fb-7-5"></div>
+    </div>
+    <div class="question-block" id="ex7q6">
+      <div class="q-number">Question 6</div>
+      <div class="q-text">Vrai ou faux : &laquo; Ma banque peut me demander mon code PIN par telephone. &raquo;</div>
+      <div class="options-list">
+        <button class="option-btn" onclick="checkAnswer(7,6,this,'b')"><span class="opt-letter">A</span> Vrai, si c'est le service securite</button>
+        <button class="option-btn" onclick="checkAnswer(7,6,this,'b')"><span class="opt-letter">B</span> FAUX &mdash; la banque ne demande JAMAIS le code PIN</button>
+      </div>
+      <div class="feedback" id="fb-7-6"></div>
+    </div>
+    <div class="result-banner" id="result7">
+      <div class="result-score" id="score7"></div>
+      <div class="result-text" id="scoreText7"></div>
+      <div class="action-row" style="justify-content:center">
+        <button class="btn btn-secondary" onclick="showWelcome()">&#8592; Menu</button>
+        <button class="btn btn-success" onclick="showFinal()">Voir le resultat final &#9733;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL -->
+  <div class="final-screen" id="finalScreen">
+    <div class="trophy">&#127942;</div>
+    <h2 style="font-family:'Outfit',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:8px">Exercices termines !</h2>
+    <div class="final-score" id="finalScore"></div>
+    <div class="final-text" id="finalText"></div>
+    <div class="breakdown-grid" id="breakdownGrid"></div>
+    <div class="action-row" style="justify-content:center">
+      <button class="btn btn-secondary" onclick="showWelcome()">&#8592; Menu</button>
+      <button class="btn btn-primary" onclick="resetAll()">Recommencer</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const TOTAL_EX = 7;
+const qPerEx = {1:5, 2:5, 3:5, 4:3, 5:6, 6:6, 7:6};
+let scores = {}, answered = {}, completed = {}, ex4Done = false;
+for (let i = 1; i <= TOTAL_EX; i++) { scores[i] = 0; answered[i] = {}; completed[i] = false; }
+
+const FB = {
+  '1-1': ['Exact ! La banque ne vend pas de voitures. Ses fonctions : paiements, epargne, credit, assurances, devises.', 'La vente de voitures n\'est pas une fonction bancaire !'],
+  '1-2': ['Bien ! Le salaire est verse sur le compte a vue (courant).', 'Le salaire est verse sur le compte a vue, pas sur le compte d\'epargne.'],
+  '1-3': ['Correct ! Taux de base + prime de fidelite si l\'argent reste 12 mois.', 'Le compte d\'epargne rapporte un taux de base et une prime de fidelite.'],
+  '1-4': ['Excellent ! Le compte d\'epargne est ideal : taux de base + prime de fidelite apres 12 mois.', 'Le compte d\'epargne est preferable pour un placement d\'un an.'],
+  '1-5': ['Bravo ! BNP Paribas Fortis, Belfius et KBC sont belges. Deutsche Bank est allemande.', 'BNP Paribas Fortis, Belfius et KBC sont belges. Deutsche Bank est allemande !'],
+  '2-1': ['Bien ! Le code 003 est dans la plage 000-009 = BNP Paribas Fortis / bpost.', 'Le code 003 correspond a BNP Paribas Fortis / bpost (codes 000-009).'],
+  '2-2': ['Exact ! Le BIC de Belfius est GKCCBEBB.', 'Belfius = GKCCBEBB. GEBABEBB = BNP Paribas, BBRUBEBB = ING, KREDBEBB = KBC.'],
+  '2-3': ['Correct ! Le code 363 = plage 310-370 = ING Belgique.', 'Le code 363 est dans la plage 310-370 = ING Belgique.'],
+  '2-4': ['Parfait ! L\'IBAN belge = 16 caracteres.', 'L\'IBAN belge comporte exactement 16 caracteres.'],
+  '2-5': ['Excellent ! Le code 725 = KBC/CBC (plage 725-735).', 'Le code 725 correspond a KBC / CBC.'],
+  '3-1': ['Exact ! 1 850 + 25 = 1 875,00 EUR de credits.', 'Credits : 1 850 (salaire) + 25 (remboursement) = 1 875,00 EUR.'],
+  '3-2': ['Bien ! 750 + 38,50 + 112,30 + 145 + 80 + 95 = 1 220,80 EUR.', 'Debits : 750 + 38,50 + 112,30 + 145 + 80 + 95 = 1 220,80 EUR.'],
+  '3-3': ['Parfait ! 2 340 + 1 875 - 1 220,80 = 2 994,20 EUR.', 'Ancien solde + Credits - Debits = 2 340 + 1 875 - 1 220,80 = 2 994,20 EUR.'],
+  '3-4': ['Bien vu ! Code 725 dans l\'IBAN = KBC.', 'Le code 725 dans l\'IBAN correspond a KBC.'],
+  '3-5': ['Bravo ! Domiciliations : Proximus, Engie et AXA. Le loyer est un ordre permanent.', 'Le loyer = ordre permanent. Domiciliations = Proximus, Engie et AXA.'],
+  '4-2': ['Exact ! Claire Henard = donneur d\'ordre/debiteur. Duval & Fils = beneficiaire/creancier.', 'Celui qui paie = donneur d\'ordre (Claire). Celui qui recoit = beneficiaire (Duval).'],
+  '4-3': ['Bien ! Aucune rature, encre noire/bleue, montant a droite. Rouge interdit !', 'Regles : aucune rature, encre noire ou bleue (jamais rouge), montant a droite.'],
+  '5-1': ['Exact ! Montant fixe + recurrent + initiative de Lea = ordre permanent.', 'Loyer = montant fixe + regulier = ordre permanent.'],
+  '5-2': ['Bien ! Proximus (creancier) preleve un montant variable = domiciliation.', 'Montant variable + initiative du creancier = domiciliation.'],
+  '5-3': ['Correct ! Paiement unique du debiteur = virement bancaire.', 'Paiement ponctuel par le debiteur = virement bancaire.'],
+  '5-4': ['Parfait ! Engie preleve un montant variable = domiciliation.', 'Initiative du creancier + montant variable = domiciliation.'],
+  '5-5': ['Excellent ! Montant fixe + periodique + initiative de Julie = ordre permanent.', 'Epargne automatique de montant fixe = ordre permanent.'],
+  '5-6': ['Oui ! Une domiciliation est revocable a tout moment.', 'Une domiciliation peut etre annulee a tout moment via sa banque.'],
+  '6-1': ['Exact ! Carte de debit (Bancontact) = debit immediat.', 'Carte de debit = debit immediat sur le compte a vue.'],
+  '6-2': ['Bien ! Visa = carte de credit = paiement differe en fin de mois.', 'Visa = credit = debit en fin de mois.'],
+  '6-3': ['Exact ! Risque d\'endettement si on depense plus que ce qu\'on peut rembourser.', 'Le risque principal = l\'endettement.'],
+  '6-4': ['Correct ! NFC = Near Field Communication = sans contact.', 'Paiement sans contact = technologie NFC.'],
+  '6-5': ['Bien ! Payconiq = paiements entre particuliers en Belgique.', 'Seul Payconiq permet le paiement entre amis.'],
+  '6-6': ['Parfait ! Carte > Langue > PIN > Montant > Recuperer billets ET carte.', 'Bonne sequence : Carte > Langue > PIN > Montant > Recuperer.'],
+  '7-1': ['Excellent reflexe ! Le domaine .xyz n\'est pas officiel. Ne jamais cliquer.', 'C\'est du phishing ! Jamais cliquer sur un lien suspect.'],
+  '7-2': ['Bon reflexe ! Card Stop 078 170 170 = 24h/24, 7j/7.', 'Appeler Card Stop immediatement (078 170 170), disponible 24h/24.'],
+  '7-3': ['Tres bien ! On ne montre JAMAIS son code PIN.', 'Le code PIN est strictement personnel. JAMAIS le montrer.'],
+  '7-4': ['Bravo ! Les 3 indices : adresse suspecte, ton urgent, demande de PIN.', 'Indices : adresse e-mail suspecte + ton urgent + demande du code PIN.'],
+  '7-5': ['Exact ! N deg dossier > Police (24h) > Contacter sa banque.', 'Ordre : n deg dossier > police (24h) > contacter sa banque.'],
+  '7-6': ['FAUX ! La banque ne demande JAMAIS le code PIN.', 'La banque ne demande JAMAIS le code PIN par aucun moyen.']
+};
+
+function showWelcome() {
+  document.querySelectorAll('.exercise-screen').forEach(e => e.classList.remove('active'));
+  document.getElementById('finalScreen').classList.remove('active');
+  document.getElementById('welcomeScreen').style.display = '';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function startExercise(n) {
+  document.getElementById('welcomeScreen').style.display = 'none';
+  document.getElementById('finalScreen').classList.remove('active');
+  document.querySelectorAll('.exercise-screen').forEach(e => e.classList.remove('active'));
+  document.getElementById('ex'+n).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function checkAnswer(ex, q, btn, correct) {
+  const key = ex+'-'+q;
+  if (answered[ex][q]) return;
+  answered[ex][q] = true;
+  const block = btn.closest('.question-block');
+  const btns = block.querySelectorAll('.option-btn');
+  const L = 'abcdefgh';
+  const ci = Array.from(btns).indexOf(btn);
+  const cl = L[ci];
+  const ok = cl === correct;
+  btns.forEach((b,i) => {
+    b.classList.add('disabled');
+    if (L[i] === correct) b.classList.add('correct-answer');
+    else if (i === ci && !ok) b.classList.add('wrong-answer');
+  });
+  if (ok) { scores[ex]++; block.classList.add('correct'); }
+  else block.classList.add('incorrect');
+  const fb = document.getElementById('fb-'+key);
+  if (fb && FB[key]) {
+    fb.textContent = ok ? FB[key][0] : FB[key][1];
+    fb.className = 'feedback show ' + (ok ? 'correct' : 'incorrect');
+  }
+  checkExDone(ex); updateUI();
+}
+
+function toggleMulti(btn) {
+  if (btn.classList.contains('disabled')) return;
+  btn.classList.toggle('selected');
+}
+
+function checkMulti(ex, q, containerId, correctArr) {
+  if (answered[ex][q]) return;
+  answered[ex][q] = true;
+  const key = ex+'-'+q;
+  const container = document.getElementById(containerId);
+  const btns = container.querySelectorAll('.option-btn');
+  const L = 'abcdefgh';
+  let sel = [];
+  btns.forEach((b,i) => { if (b.classList.contains('selected')) sel.push(L[i]); });
+  const ok = sel.length === correctArr.length && sel.every(l => correctArr.includes(l));
+  btns.forEach((b,i) => {
+    b.classList.add('disabled');
+    if (correctArr.includes(L[i])) b.classList.add('correct-answer');
+    else if (b.classList.contains('selected')) b.classList.add('wrong-answer');
+  });
+  const block = container.closest('.question-block');
+  if (ok) { scores[ex]++; if(block) block.classList.add('correct'); }
+  else { if(block) block.classList.add('incorrect'); }
+  const fb = document.getElementById('fb-'+key);
+  if (fb && FB[key]) {
+    fb.textContent = ok ? FB[key][0] : FB[key][1];
+    fb.className = 'feedback show ' + (ok ? 'correct' : 'incorrect');
+  }
+  checkExDone(ex); updateUI();
+}
+
+function checkEx4() {
+  if (ex4Done) return;
+  ex4Done = true;
+  answered[4][1] = true;
+  const fields = {
+    'ex4-nom-do': [v => /henard/i.test(v)&&/claire/i.test(v), 'Claire Henard'],
+    'ex4-iban-do': [v => v.replace(/\s/g,'').toUpperCase()==='BE45063012345678', 'BE45 0630 1234 5678'],
+    'ex4-nom-ben': [v => /duval/i.test(v), 'Duval & Fils'],
+    'ex4-iban-ben': [v => v.replace(/\s/g,'').toUpperCase()==='BE68310078901234', 'BE68 3100 7890 1234'],
+    'ex4-montant': [v => {let n=v.replace(/[^0-9.,]/g,'').replace(',','.'); return n==='480.00'||n==='480';}, '480,00'],
+    'ex4-comm': [v => v.replace(/\s/g,'')==='+++150/2026/00148+++', '+++150/2026/00148+++']
+  };
+  let ok=0, tot=6, wrong=[];
+  for (const [id,[fn,lbl]] of Object.entries(fields)) {
+    const el = document.getElementById(id);
+    if (fn(el.value.trim())) { ok++; el.classList.add('correct'); }
+    else { el.classList.add('incorrect'); wrong.push(lbl); }
+  }
+  const fb = document.getElementById('fb-4-1');
+  if (ok===tot) {
+    scores[4]++; fb.textContent = 'Parfait ! Tous les champs sont corrects.';
+    fb.className = 'feedback show correct';
+  } else {
+    fb.textContent = ok+'/'+tot+' corrects. Attendu : '+wrong.join(', ');
+    fb.className = 'feedback show incorrect';
+  }
+  checkExDone(4); updateUI();
+}
+
+function checkExDone(ex) {
+  if (Object.keys(answered[ex]).length >= qPerEx[ex] && !completed[ex]) {
+    completed[ex] = true;
+    const r = document.getElementById('result'+ex);
+    const s = scores[ex], t = qPerEx[ex], p = Math.round(s/t*100);
+    document.getElementById('score'+ex).textContent = s+' / '+t;
+    document.getElementById('score'+ex).className = 'result-score '+(p>=80?'good':p>=50?'ok':'poor');
+    let m = p===100?'Score parfait !':p>=80?'Excellent travail !':p>=60?'Bon travail, revois les erreurs.':'Relis la theorie et recommence.';
+    document.getElementById('scoreText'+ex).textContent = m;
+    r.classList.add('show');
+    const st = document.getElementById('status'+ex);
+    if (s===t) { st.textContent='* Parfait !'; st.className='card-status perfect'; }
+    else { st.textContent='V '+s+'/'+t; st.className='card-status completed'; }
+  }
+}
+
+function updateUI() {
+  let ts=0, tm=0, cc=0;
+  for (let i=1;i<=TOTAL_EX;i++) { ts+=scores[i]; tm+=qPerEx[i]; if(completed[i])cc++; }
+  document.getElementById('totalScore').textContent = ts+' pts';
+  document.getElementById('progressLabel').textContent = cc+' / '+TOTAL_EX+' exercices';
+  const p = Math.round(cc/TOTAL_EX*100);
+  document.getElementById('progressPct').textContent = p+'%';
+  document.getElementById('progressFill').style.width = p+'%';
+}
+
+function showFinal() {
+  document.querySelectorAll('.exercise-screen').forEach(e => e.classList.remove('active'));
+  document.getElementById('welcomeScreen').style.display = 'none';
+  const fs = document.getElementById('finalScreen');
+  fs.classList.add('active');
+  let total=0, max=0, html='';
+  for (let i=1;i<=TOTAL_EX;i++) {
+    const s=scores[i], q=qPerEx[i]; total+=s; max+=q;
+    const p=q>0?Math.round(s/q*100):0;
+    const c=p>=80?'var(--accent-green)':p>=50?'var(--accent-amber)':'var(--accent-red)';
+    html+=`<div class="breakdown-item"><div class="breakdown-num" style="color:${c}">${s}/${q}</div><div class="breakdown-label">Ex. ${i}</div></div>`;
+  }
+  document.getElementById('breakdownGrid').innerHTML = html;
+  document.getElementById('finalScore').textContent = total+' / '+max+' points';
+  const pct = Math.round(total/max*100);
+  let msg = pct>=90?'Felicitations ! Tu maitrises parfaitement le chapitre.':pct>=70?'Tres bon travail ! Quelques points a revoir.':pct>=50?'Bon effort ! Revois les exercices difficiles.':'Continue a travailler ! Relis la theorie.';
+  document.getElementById('finalText').textContent = msg;
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function resetAll() {
+  for (let i=1;i<=TOTAL_EX;i++) {
+    scores[i]=0; answered[i]={}; completed[i]=false;
+    const st=document.getElementById('status'+i);
+    st.textContent='- A faire'; st.className='card-status pending';
+    const r=document.getElementById('result'+i); if(r) r.classList.remove('show');
+    const sc=document.getElementById('ex'+i);
+    if(sc) {
+      sc.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected','correct-answer','wrong-answer','disabled'));
+      sc.querySelectorAll('.question-block').forEach(b=>b.classList.remove('correct','incorrect'));
+      sc.querySelectorAll('.feedback').forEach(f=>{f.classList.remove('show','correct','incorrect');});
+      sc.querySelectorAll('.input-field').forEach(f=>{f.value='';f.classList.remove('correct','incorrect');});
+    }
+  }
+  ex4Done=false; updateUI(); showWelcome();
+}
+updateUI();
+</script>
+</body>
+</html>

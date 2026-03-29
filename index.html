@@ -377,6 +377,118 @@ body::before {
   .bs-table th, .bs-table td { padding: 8px 6px; }
   .tf-row { grid-template-columns: 1fr; }
 }
+
+/* ============ MODAL OVERLAY ============ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: modalFadeIn 0.3s ease;
+}
+.modal-overlay.closing { animation: modalFadeOut 0.25s ease forwards; }
+.modal-overlay.hidden { display: none; }
+@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalFadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+.modal-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 36px;
+  max-width: 480px; width: 100%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  animation: modalSlideUp 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.modal-box h2 { font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+.modal-box p { color: var(--text-dim); font-size: 0.92rem; margin-bottom: 24px; line-height: 1.5; }
+.modal-input {
+  width: 100%; padding: 14px 16px;
+  background: var(--bg); border: 2px solid var(--border);
+  border-radius: 10px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 1rem;
+  outline: none; transition: border-color 0.3s;
+}
+.modal-input:focus { border-color: var(--accent-green); }
+.modal-input.error { border-color: var(--accent-red); }
+.modal-error { color: var(--accent-red); font-size: 0.82rem; margin-top: 6px; min-height: 20px; }
+.modal-actions { margin-top: 20px; }
+.modal-actions .btn { width: 100%; }
+
+/* ============ LEADERBOARD MODAL ============ */
+.lb-modal { max-width: 600px; max-height: 85vh; display: flex; flex-direction: column; }
+.lb-tabs {
+  display: flex; gap: 4px; margin-bottom: 20px;
+  background: var(--bg); border-radius: 10px; padding: 4px;
+}
+.lb-tab {
+  flex: 1; padding: 10px; text-align: center;
+  border-radius: 8px; cursor: pointer;
+  font-weight: 600; font-size: 0.88rem;
+  color: var(--text-dim); transition: all 0.2s;
+  border: none; background: none; font-family: 'DM Sans', sans-serif;
+}
+.lb-tab:hover { color: var(--text); }
+.lb-tab.active { background: var(--accent-green); color: var(--bg); }
+
+.lb-content { overflow-y: auto; flex: 1; }
+.lb-table { width: 100%; border-collapse: collapse; }
+.lb-table th {
+  text-align: left; padding: 10px 12px;
+  font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--text-dim); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--bg-card);
+}
+.lb-table td { padding: 10px 12px; font-size: 0.88rem; border-bottom: 1px solid var(--border); }
+.lb-table tr:hover td { background: rgba(255,255,255,0.03); }
+.lb-table tr.is-me td { background: rgba(16,185,129,0.1); font-weight: 600; }
+.lb-rank-1 { color: #ffd700; font-weight: 800; }
+.lb-rank-2 { color: #c0c0c0; font-weight: 700; }
+.lb-rank-3 { color: #cd7f32; font-weight: 700; }
+.lb-email { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-my-stats {
+  background: var(--bg); border-radius: 10px;
+  padding: 16px; margin-bottom: 16px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+}
+.lb-stat { text-align: center; }
+.lb-stat-val { font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--accent-green); }
+.lb-stat-label { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+.lb-empty { text-align: center; padding: 40px; color: var(--text-dim); }
+.lb-loading { text-align: center; padding: 40px; }
+.lb-spinner {
+  width: 32px; height: 32px; border: 3px solid var(--border);
+  border-top-color: var(--accent-green); border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Timer badge */
+.timer-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.06); padding: 6px 14px;
+  border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+  font-family: 'Space Mono', monospace;
+  color: var(--accent-blue);
+}
+
+/* Leaderboard buttons */
+.lb-buttons { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; justify-content: center; }
+.btn-lb {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 20px; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-weight: 600;
+  font-size: 0.9rem; cursor: pointer; border: 2px solid; transition: all 0.3s;
+}
+.btn-lb-app { background: rgba(16,185,129,0.1); border-color: var(--accent-green); color: var(--accent-green); }
+.btn-lb-app:hover { background: var(--accent-green); color: var(--bg); }
+.btn-lb-global { background: rgba(245,158,11,0.1); border-color: var(--accent-amber); color: var(--accent-amber); }
+.btn-lb-global:hover { background: var(--accent-amber); color: var(--bg); }
 </style>
 </head>
 <body>
@@ -394,6 +506,7 @@ body::before {
       </div>
       <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
     </div>
+    <div class="timer-badge"><span>⏱️</span> <span id="timerDisplay">00:00</span></div>
     <div class="score-badge">
       <span>&#9733;</span>
       <span id="totalScore">0 pts</span>
@@ -452,6 +565,8 @@ body::before {
       </div>
     </div>
     <button class="btn-start-all" onclick="startExercise(1)">Commencer les exercices &#8594;</button>
+    <div id="welcomeUserInfo" style="margin-top:16px;color:var(--text-dim);font-size:0.82rem;"></div>
+    <div id="welcomeLBButtons"></div>
   </div>
 
   <!-- EX1: Fonctions bancaires -->
@@ -1001,7 +1116,7 @@ body::before {
     <div class="question-block" id="ex7q4">
       <div class="q-number">Situation 4 &mdash; E-mail suspect</div>
       <div class="email-frame">
-        <div class="email-header-row"><span class="email-label">De :</span><span class="email-value email-suspicious">service@kbc-verification-urgente.com</span></div>
+        <div class="email-header-row"><span class="email-label">De :</span><span class="email-value email-suspicious">securite@bnp-paribas-alert.xyz</span></div>
         <div class="email-header-row"><span class="email-label">Objet :</span><span class="email-value">&#9888; URGENT : Carte bloquee dans 24h</span></div>
         <div class="email-body">Cher client, une tentative de fraude a ete detectee. Confirmez vos donnees incluant votre code PIN.<br><br><span style="background:var(--primary);color:white;padding:6px 16px;border-radius:6px;display:inline-block">Verifier mon compte</span></div>
       </div>
@@ -1055,13 +1170,83 @@ body::before {
       <button class="btn btn-secondary" onclick="showWelcome()">&#8592; Menu</button>
       <button class="btn btn-primary" onclick="resetAll()">Recommencer</button>
     </div>
+    <div id="finalLBButtons"></div>
   </div>
 
 </main>
 
+<!-- EMAIL MODAL -->
+<div class="modal-overlay" id="emailModal">
+  <div class="modal-box">
+    <h2>👋 Qui es-tu ?</h2>
+    <p>Entre ton adresse email pour accéder à l'application. Si ce n'est pas toi, modifie l'adresse ci-dessous.</p>
+    <input type="email" class="modal-input" id="emailInput" placeholder="prenom.nom@istlm.org" autocomplete="email" spellcheck="false">
+    <div class="modal-error" id="emailError"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="emailBtn" onclick="validateEmail()">C'est parti ! 🚀</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD MODAL -->
+<div class="modal-overlay hidden" id="lbModal" onclick="if(event.target===this)closeLB()">
+  <div class="modal-box lb-modal">
+    <h2 id="lbTitle">🏆 Classement</h2>
+    <div class="lb-tabs">
+      <button class="lb-tab active" id="lbTabApp" onclick="switchLBTab('app')">📱 Cette application</button>
+      <button class="lb-tab" id="lbTabGlobal" onclick="switchLBTab('global')">🌍 Classement général</button>
+    </div>
+    <div id="lbMyStats" class="lb-my-stats hidden">
+      <div class="lb-stat"><div class="lb-stat-val" id="lbMyRank">-</div><div class="lb-stat-label">Rang</div></div>
+      <div class="lb-stat"><div class="lb-stat-val" id="lbMyPoints">-</div><div class="lb-stat-label">Points</div></div>
+      <div class="lb-stat"><div class="lb-stat-val" id="lbMyTime">-</div><div class="lb-stat-label">Temps</div></div>
+    </div>
+    <div class="lb-content" id="lbContent">
+      <div class="lb-loading"><div class="lb-spinner"></div><span style="color:var(--text-dim);">Chargement…</span></div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-secondary" onclick="closeLB()">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// ============================================================
+// TRACKING CONFIGURATION
+// ============================================================
+const TRACKING = {
+  appName: "Le Paiement Bancaire",
+  scriptUrl: "https://script.google.com/macros/s/AKfycbx9bRMVuHU2mgFLii1KcQXD3LdZahnDH1rf1cWv9RuDvQAt0l3VtLtxzmbH7MtpJWRjfA/exec"
+};
+
+// ============================================================
+// TRACKING STATE
+// ============================================================
+let TRACK = {
+  email: localStorage.getItem('student_email') || '',
+  classe: localStorage.getItem('student_classe') || '',
+  exerciseStartTime: null,
+  exerciseTimes: {},
+  exerciseScores: {},
+  scoreBeforeExercise: 0,
+  globalTimerStart: null,
+  globalTimerInterval: null
+};
+
+// ============================================================
+// ORIGINAL APP STATE
+// ============================================================
 const TOTAL_EX = 7;
 const qPerEx = {1:5, 2:5, 3:5, 4:3, 5:6, 6:6, 7:6};
+const exNames = {
+  1: "Exercice 1 — Fonctions bancaires & comptes",
+  2: "Exercice 2 — Décoder un IBAN belge",
+  3: "Exercice 3 — Lire un extrait de compte",
+  4: "Exercice 4 — Remplir un ordre de virement",
+  5: "Exercice 5 — Ordres permanents & domiciliations",
+  6: "Exercice 6 — Cartes & paiements électroniques",
+  7: "Exercice 7 — Sécurité & anti-phishing"
+};
 let scores = {}, answered = {}, completed = {}, ex4Done = false;
 for (let i = 1; i <= TOTAL_EX; i++) { scores[i] = 0; answered[i] = {}; completed[i] = false; }
 
@@ -1107,6 +1292,11 @@ function showWelcome() {
   document.querySelectorAll('.exercise-screen').forEach(e => e.classList.remove('active'));
   document.getElementById('finalScreen').classList.remove('active');
   document.getElementById('welcomeScreen').style.display = '';
+  // Show user info and leaderboard buttons
+  const info = document.getElementById('welcomeUserInfo');
+  if (info) info.textContent = TRACK.email ? `Connecté : ${TRACK.email}${TRACK.classe ? ' — ' + TRACK.classe : ''}` : '';
+  const lb = document.getElementById('welcomeLBButtons');
+  if (lb) lb.innerHTML = leaderboardButtonsHTML();
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -1115,6 +1305,10 @@ function startExercise(n) {
   document.getElementById('finalScreen').classList.remove('active');
   document.querySelectorAll('.exercise-screen').forEach(e => e.classList.remove('active'));
   document.getElementById('ex'+n).classList.add('active');
+  // Start exercise timer if not completed
+  if (!completed[n]) {
+    startExerciseTimer(n);
+  }
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -1216,6 +1410,9 @@ function checkExDone(ex) {
     const st = document.getElementById('status'+ex);
     if (s===t) { st.textContent='* Parfait !'; st.className='card-status perfect'; }
     else { st.textContent='V '+s+'/'+t; st.className='card-status completed'; }
+    // Tracking: stop timer and send results
+    stopExerciseTimer(ex);
+    sendResult(ex);
   }
 }
 
@@ -1246,6 +1443,9 @@ function showFinal() {
   const pct = Math.round(total/max*100);
   let msg = pct>=90?'Felicitations ! Tu maitrises parfaitement le chapitre.':pct>=70?'Tres bon travail ! Quelques points a revoir.':pct>=50?'Bon effort ! Revois les exercices difficiles.':'Continue a travailler ! Relis la theorie.';
   document.getElementById('finalText').textContent = msg;
+  // Show leaderboard buttons
+  const lb = document.getElementById('finalLBButtons');
+  if (lb) lb.innerHTML = leaderboardButtonsHTML();
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -1259,13 +1459,357 @@ function resetAll() {
     if(sc) {
       sc.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected','correct-answer','wrong-answer','disabled'));
       sc.querySelectorAll('.question-block').forEach(b=>b.classList.remove('correct','incorrect'));
-      sc.querySelectorAll('.feedback').forEach(f=>{f.classList.remove('show','correct','incorrect');});
-      sc.querySelectorAll('.input-field').forEach(f=>{f.value='';f.classList.remove('correct','incorrect');});
+      sc.querySelectorAll('.feedback').forEach(f=>{f.classList.remove('show','correct','incorrect'); f.textContent='';});
+      sc.querySelectorAll('input[type=text]').forEach(inp=>{inp.value=''; inp.classList.remove('correct','incorrect');});
     }
   }
-  ex4Done=false; updateUI(); showWelcome();
+  ex4Done = false;
+  // Reset tracking timers
+  TRACK.exerciseTimes = {};
+  TRACK.exerciseScores = {};
+  updateUI();
+  showWelcome();
 }
-updateUI();
+
+// ============================================================
+// EMAIL MODAL — Vérification côté serveur
+// ============================================================
+function showEmailModal() {
+  document.getElementById('emailModal').classList.remove('hidden');
+  const input = document.getElementById('emailInput');
+  if (TRACK.email) input.value = TRACK.email;
+  setTimeout(() => input.focus(), 300);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') validateEmail(); });
+}
+
+function validateEmail() {
+  const input = document.getElementById('emailInput');
+  const error = document.getElementById('emailError');
+  const btn = document.getElementById('emailBtn');
+  const email = input.value.trim().toLowerCase();
+
+  if (!email) {
+    input.classList.add('error');
+    error.textContent = "L'adresse email est obligatoire.";
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    input.classList.add('error');
+    error.textContent = "Format d'email invalide.";
+    return;
+  }
+
+  input.classList.remove('error');
+  error.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Vérification…';
+
+  const cbName = 'emailCheck_' + Date.now();
+  window[cbName] = function(data) {
+    delete window[cbName];
+    const s = document.getElementById(cbName);
+    if (s) s.remove();
+
+    btn.disabled = false;
+    btn.textContent = "C'est parti ! 🚀";
+
+    if (data && data.status === 'ok' && data.found === true) {
+      const previousEmail = TRACK.email;
+      if (previousEmail && previousEmail !== data.email) {
+        resetAll();
+      }
+      TRACK.email = data.email;
+      TRACK.classe = data.classe || '';
+      localStorage.setItem('student_email', data.email);
+      localStorage.setItem('student_classe', data.classe || '');
+
+      const modal = document.getElementById('emailModal');
+      modal.classList.add('closing');
+      setTimeout(() => modal.classList.add('hidden'), 250);
+      startGlobalTimer();
+      showWelcome();
+    } else {
+      input.classList.add('error');
+      error.innerHTML = "⚠️ Cette adresse email n'est pas enregistrée.<br><small style='color:var(--text-dim);'>Vérifie l'orthographe ou demande à ton professeur de t'ajouter à la liste.</small>";
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id = cbName;
+  script.src = `${TRACKING.scriptUrl}?action=check_email&email=${encodeURIComponent(email)}&callback=${cbName}`;
+  script.onerror = function() {
+    delete window[cbName]; script.remove();
+    btn.disabled = false;
+    btn.textContent = "C'est parti ! 🚀";
+    error.textContent = "⚠️ Erreur de connexion. Réessaie dans quelques secondes.";
+  };
+  document.body.appendChild(script);
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startGlobalTimer() {
+  TRACK.globalTimerStart = Date.now();
+  TRACK.globalTimerInterval = setInterval(updateTimerDisplay, 1000);
+}
+
+function updateTimerDisplay() {
+  if (!TRACK.globalTimerStart) return;
+  const elapsed = Math.floor((Date.now() - TRACK.globalTimerStart) / 1000);
+  const min = String(Math.floor(elapsed / 60)).padStart(2, '0');
+  const sec = String(elapsed % 60).padStart(2, '0');
+  document.getElementById('timerDisplay').textContent = `${min}:${sec}`;
+}
+
+function startExerciseTimer(n) {
+  TRACK.exerciseStartTime = Date.now();
+  // Calculate current total score to track delta
+  let totalBefore = 0;
+  for (let i = 1; i <= TOTAL_EX; i++) totalBefore += scores[i];
+  TRACK.scoreBeforeExercise = totalBefore;
+}
+
+function stopExerciseTimer(n) {
+  if (!TRACK.exerciseStartTime) return;
+  const elapsed = Math.round((Date.now() - TRACK.exerciseStartTime) / 1000);
+  TRACK.exerciseTimes[n] = elapsed;
+  let totalAfter = 0;
+  for (let i = 1; i <= TOTAL_EX; i++) totalAfter += scores[i];
+  TRACK.exerciseScores[n] = totalAfter - TRACK.scoreBeforeExercise;
+  TRACK.exerciseStartTime = null;
+}
+
+function formatTime(seconds) {
+  if (!seconds || seconds <= 0) return '0s';
+  seconds = Math.round(seconds);
+  if (seconds < 60) return seconds + 's';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m + 'm' + (s > 0 ? String(s).padStart(2, '0') + 's' : '');
+}
+
+// ============================================================
+// SEND RESULTS TO GOOGLE SHEETS
+// ============================================================
+function sendResult(exIdx) {
+  if (!TRACK.email || !TRACKING.scriptUrl) return;
+
+  const payload = {
+    email: TRACK.email,
+    classe: TRACK.classe,
+    app: TRACKING.appName,
+    niveau: exNames[exIdx] || `Niveau ${exIdx}`,
+    points: TRACK.exerciseScores[exIdx] || 0,
+    pointsMax: qPerEx[exIdx] || 0,
+    temps: TRACK.exerciseTimes[exIdx] || 0
+  };
+
+  fetch(TRACKING.scriptUrl, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(payload)
+  }).catch(err => console.warn("Erreur envoi résultat:", err));
+}
+
+// ============================================================
+// LEADERBOARD
+// ============================================================
+let lbCurrentTab = 'app';
+
+function leaderboardButtonsHTML() {
+  return `<div class="lb-buttons">
+    <button class="btn-lb btn-lb-app" onclick="openLB('app')">🏆 Classement — ${TRACKING.appName}</button>
+    <button class="btn-lb btn-lb-global" onclick="openLB('global')">🌍 Classement général</button>
+  </div>`;
+}
+
+function openLB(tab) {
+  lbCurrentTab = tab || 'app';
+  document.getElementById('lbModal').classList.remove('hidden');
+  switchLBTab(lbCurrentTab);
+}
+
+function closeLB() {
+  const modal = document.getElementById('lbModal');
+  modal.classList.add('closing');
+  setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('closing'); }, 250);
+}
+
+function switchLBTab(tab) {
+  lbCurrentTab = tab;
+  document.getElementById('lbTabApp').classList.toggle('active', tab === 'app');
+  document.getElementById('lbTabGlobal').classList.toggle('active', tab === 'global');
+  document.getElementById('lbTitle').textContent = tab === 'app' ? `🏆 Classement — ${TRACKING.appName}` : '🌍 Classement général';
+  fetchLeaderboard(tab);
+}
+
+function fetchLeaderboard(tab) {
+  const content = document.getElementById('lbContent');
+  const statsDiv = document.getElementById('lbMyStats');
+  content.innerHTML = '<div class="lb-loading"><div class="lb-spinner"></div><span style="color:var(--text-dim);">Chargement…</span></div>';
+  statsDiv.classList.add('hidden');
+
+  let url;
+  if (tab === 'app') {
+    url = `${TRACKING.scriptUrl}?action=leaderboard_app&app=${encodeURIComponent(TRACKING.appName)}`;
+  } else {
+    url = `${TRACKING.scriptUrl}?action=leaderboard_global`;
+  }
+
+  const cbName = 'lbCallback_' + Date.now();
+  window[cbName] = function(data) {
+    delete window[cbName];
+    const scriptEl = document.getElementById('lbScript');
+    if (scriptEl) scriptEl.remove();
+    renderLeaderboard(data, tab);
+  };
+
+  const script = document.createElement('script');
+  script.id = 'lbScript';
+  script.src = url + `&callback=${cbName}`;
+  script.onerror = function() {
+    delete window[cbName];
+    content.innerHTML = '<div class="lb-empty">⚠️ Impossible de charger le classement.</div>';
+  };
+  document.body.appendChild(script);
+}
+
+function renderLeaderboard(data, tab) {
+  const content = document.getElementById('lbContent');
+  const statsDiv = document.getElementById('lbMyStats');
+
+  if (!data || data.status !== 'ok') {
+    content.innerHTML = `<div class="lb-empty">⚠️ ${data?.message || 'Erreur inconnue'}</div>`;
+    return;
+  }
+
+  const list = data.leaderboard || [];
+  if (list.length === 0) {
+    content.innerHTML = '<div class="lb-empty">🏁 Aucun résultat enregistré pour le moment.</div>';
+    statsDiv.classList.add('hidden');
+    return;
+  }
+
+  const myEntry = list.find(e => e.email === TRACK.email);
+  if (myEntry) {
+    statsDiv.classList.remove('hidden');
+    document.getElementById('lbMyRank').textContent = `#${myEntry.rang}`;
+    const myPct = myEntry.totalPointsMax > 0 ? Math.round(myEntry.totalPoints / myEntry.totalPointsMax * 100) : (myEntry.pct || 0);
+    document.getElementById('lbMyPoints').textContent = `${myEntry.totalPoints}/${myEntry.totalPointsMax || '?'} (${myPct}%)`;
+    document.getElementById('lbMyTime').textContent = formatTime(myEntry.totalTemps);
+  } else {
+    statsDiv.classList.add('hidden');
+  }
+
+  let html = `<table class="lb-table">
+    <thead><tr>
+      <th>#</th><th>Élève</th><th>Score</th><th>%</th><th>Temps</th>
+    </tr></thead><tbody>`;
+
+  list.forEach(entry => {
+    const isMe = entry.email === TRACK.email;
+    const rankClass = entry.rang === 1 ? 'lb-rank-1' : entry.rang === 2 ? 'lb-rank-2' : entry.rang === 3 ? 'lb-rank-3' : '';
+    const medals = ['', '🥇', '🥈', '🥉'];
+    const medal = medals[entry.rang] || '';
+    const displayEmail = entry.email.split('@')[0].replace(/[._-]/g, ' ');
+    const pct = entry.totalPointsMax > 0 ? Math.round(entry.totalPoints / entry.totalPointsMax * 100) : (entry.pct || 0);
+    const pctColor = pct >= 80 ? 'var(--accent-green)' : pct >= 50 ? 'var(--accent-amber)' : 'var(--accent-red)';
+
+    html += `<tr class="${isMe ? 'is-me' : ''}">
+      <td class="${rankClass}">${medal || entry.rang}</td>
+      <td class="lb-email" title="${entry.email}">${displayEmail}</td>
+      <td><strong>${entry.totalPoints}</strong><small style="color:var(--text-dim);font-size:0.75rem;">/${entry.totalPointsMax || '?'}</small></td>
+      <td style="color:${pctColor};font-weight:700;">${pct}%</td>
+      <td>${formatTime(entry.totalTemps)}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  content.innerHTML = html;
+}
+
+// ============================================================
+// EMAIL MODAL — Vérification côté serveur
+// ============================================================
+function showEmailModal() {
+  document.getElementById('emailModal').classList.remove('hidden');
+  const input = document.getElementById('emailInput');
+  if (TRACK.email) input.value = TRACK.email;
+  setTimeout(() => input.focus(), 300);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') validateEmail(); });
+}
+
+function validateEmail() {
+  const input = document.getElementById('emailInput');
+  const error = document.getElementById('emailError');
+  const btn = document.getElementById('emailBtn');
+  const email = input.value.trim().toLowerCase();
+
+  if (!email) {
+    input.classList.add('error');
+    error.textContent = "L'adresse email est obligatoire.";
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    input.classList.add('error');
+    error.textContent = "Format d'email invalide.";
+    return;
+  }
+
+  input.classList.remove('error');
+  error.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Vérification…';
+
+  const cbName = 'emailCheck_' + Date.now();
+  window[cbName] = function(data) {
+    delete window[cbName];
+    const s = document.getElementById(cbName);
+    if (s) s.remove();
+
+    btn.disabled = false;
+    btn.textContent = "C'est parti ! 🚀";
+
+    if (data && data.status === 'ok' && data.found === true) {
+      const previousEmail = TRACK.email;
+      if (previousEmail && previousEmail !== data.email) {
+        resetAll();
+      }
+      TRACK.email = data.email;
+      TRACK.classe = data.classe || '';
+      localStorage.setItem('student_email', data.email);
+      localStorage.setItem('student_classe', data.classe || '');
+
+      const modal = document.getElementById('emailModal');
+      modal.classList.add('closing');
+      setTimeout(() => modal.classList.add('hidden'), 250);
+      startGlobalTimer();
+      showWelcome();
+    } else {
+      input.classList.add('error');
+      error.innerHTML = "⚠️ Cette adresse email n'est pas enregistrée.<br><small style='color:var(--text-dim);'>Vérifie l'orthographe ou demande à ton professeur de t'ajouter à la liste.</small>";
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id = cbName;
+  script.src = `${TRACKING.scriptUrl}?action=check_email&email=${encodeURIComponent(email)}&callback=${cbName}`;
+  script.onerror = function() {
+    delete window[cbName]; script.remove();
+    btn.disabled = false;
+    btn.textContent = "C'est parti ! 🚀";
+    error.textContent = "⚠️ Erreur de connexion. Réessaie dans quelques secondes.";
+  };
+  document.body.appendChild(script);
+}
+
+// ============================================================
+// INIT — Toujours demander l'email au lancement
+// ============================================================
+showEmailModal();
+
 </script>
 </body>
 </html>

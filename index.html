@@ -147,6 +147,8 @@ body::before {
 .card-status.pending { color: var(--text-dim); }
 .card-status.completed { color: var(--accent-green); }
 .card-status.perfect { color: var(--accent-amber); }
+.exercise-card.locked { opacity: 0.35; pointer-events: none; filter: grayscale(0.5); }
+.card-status.locked-status { color: var(--text-dim); }
 .btn-start-all {
   display: inline-flex; align-items: center; gap: 8px;
   background: linear-gradient(135deg, var(--primary), var(--primary-soft));
@@ -1210,12 +1212,14 @@ body::before {
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ============================================================
 // TRACKING CONFIGURATION
 // ============================================================
 const TRACKING = {
   appName: "Le Paiement Bancaire",
+  totalNiveaux: 7,
+  sessionId: null,
   scriptUrl: "https://script.google.com/macros/s/AKfycbx9bRMVuHU2mgFLii1KcQXD3LdZahnDH1rf1cWv9RuDvQAt0l3VtLtxzmbH7MtpJWRjfA/exec"
 };
 
@@ -1297,10 +1301,13 @@ function showWelcome() {
   if (info) info.textContent = TRACK.email ? `Connecté : ${TRACK.email}${TRACK.classe ? ' — ' + TRACK.classe : ''}` : '';
   const lb = document.getElementById('welcomeLBButtons');
   if (lb) lb.innerHTML = leaderboardButtonsHTML();
+  updateCardLocks();
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function startExercise(n) {
+  // Verrouillage séquentiel : bloquer si exercice précédent non complété
+  if (n >= 2 && !completed[n - 1]) return;
   document.getElementById('welcomeScreen').style.display = 'none';
   document.getElementById('finalScreen').classList.remove('active');
   document.querySelectorAll('.exercise-screen').forEach(e => e.classList.remove('active'));
@@ -1424,6 +1431,21 @@ function updateUI() {
   const p = Math.round(cc/TOTAL_EX*100);
   document.getElementById('progressPct').textContent = p+'%';
   document.getElementById('progressFill').style.width = p+'%';
+  updateCardLocks();
+}
+
+function updateCardLocks() {
+  const cards = document.querySelectorAll('.exercise-card');
+  cards.forEach((card, idx) => {
+    const exNum = idx + 1;
+    const isLocked = exNum >= 2 && !completed[exNum - 1];
+    card.classList.toggle('locked', isLocked);
+    const statusEl = document.getElementById('status' + exNum);
+    if (isLocked && statusEl && !completed[exNum]) {
+      statusEl.textContent = '🔒 Verrouillé';
+      statusEl.className = 'card-status locked-status';
+    }
+  });
 }
 
 function showFinal() {
@@ -1464,6 +1486,8 @@ function resetAll() {
     }
   }
   ex4Done = false;
+  // Nouvelle session pour le "Rejouer"
+  TRACKING.sessionId = new Date().toISOString();
   // Reset tracking timers
   TRACK.exerciseTimes = {};
   TRACK.exerciseScores = {};
@@ -1522,6 +1546,9 @@ function validateEmail() {
       TRACK.classe = data.classe || '';
       localStorage.setItem('student_email', data.email);
       localStorage.setItem('student_classe', data.classe || '');
+
+      // Générer le sessionId pour cette partie
+      TRACKING.sessionId = new Date().toISOString();
 
       const modal = document.getElementById('emailModal');
       modal.classList.add('closing');
@@ -1602,7 +1629,9 @@ function sendResult(exIdx) {
     niveau: exNames[exIdx] || `Niveau ${exIdx}`,
     points: TRACK.exerciseScores[exIdx] || 0,
     pointsMax: qPerEx[exIdx] || 0,
-    temps: TRACK.exerciseTimes[exIdx] || 0
+    temps: TRACK.exerciseTimes[exIdx] || 0,
+    totalNiveaux: TRACKING.totalNiveaux,
+    sessionId: TRACKING.sessionId
   };
 
   fetch(TRACKING.scriptUrl, {
@@ -1641,7 +1670,8 @@ function switchLBTab(tab) {
   lbCurrentTab = tab;
   document.getElementById('lbTabApp').classList.toggle('active', tab === 'app');
   document.getElementById('lbTabGlobal').classList.toggle('active', tab === 'global');
-  document.getElementById('lbTitle').textContent = tab === 'app' ? `🏆 Classement — ${TRACKING.appName}` : '🌍 Classement général';
+  const classeLabel = TRACK.classe ? ` (${TRACK.classe})` : '';
+  document.getElementById('lbTitle').textContent = tab === 'app' ? `🏆 Classement — ${TRACKING.appName}${classeLabel}` : `🌍 Classement général${classeLabel}`;
   fetchLeaderboard(tab);
 }
 
@@ -1653,9 +1683,13 @@ function fetchLeaderboard(tab) {
 
   let url;
   if (tab === 'app') {
-    url = `${TRACKING.scriptUrl}?action=leaderboard_app&app=${encodeURIComponent(TRACKING.appName)}`;
+    url = `${TRACKING.scriptUrl}?action=leaderboard_app&app=${encodeURIComponent(TRACKING.appName)}&mode=last`;
   } else {
-    url = `${TRACKING.scriptUrl}?action=leaderboard_global`;
+    url = `${TRACKING.scriptUrl}?action=leaderboard_global&mode=last`;
+  }
+  // Filtrer par la classe de l'élève
+  if (TRACK.classe) {
+    url += `&classe=${encodeURIComponent(TRACK.classe)}`;
   }
 
   const cbName = 'lbCallback_' + Date.now();
@@ -1685,7 +1719,17 @@ function renderLeaderboard(data, tab) {
     return;
   }
 
-  const list = data.leaderboard || [];
+  let list = data.leaderboard || [];
+  // Classement général : trier par pourcentage (plus équitable)
+  if (tab === 'global' && list.length > 0) {
+    list = list.slice().sort((a, b) => {
+      const pctA = a.pct || (a.totalPointsMax > 0 ? Math.round(a.totalPoints / a.totalPointsMax * 100) : 0);
+      const pctB = b.pct || (b.totalPointsMax > 0 ? Math.round(b.totalPoints / b.totalPointsMax * 100) : 0);
+      if (pctB !== pctA) return pctB - pctA;
+      return (a.totalTemps || 0) - (b.totalTemps || 0);
+    });
+    list.forEach((entry, i) => { entry.rang = i + 1; });
+  }
   if (list.length === 0) {
     content.innerHTML = '<div class="lb-empty">🏁 Aucun résultat enregistré pour le moment.</div>';
     statsDiv.classList.add('hidden');
@@ -1730,86 +1774,11 @@ function renderLeaderboard(data, tab) {
   content.innerHTML = html;
 }
 
-// ============================================================
-// EMAIL MODAL — Vérification côté serveur
-// ============================================================
-function showEmailModal() {
-  document.getElementById('emailModal').classList.remove('hidden');
-  const input = document.getElementById('emailInput');
-  if (TRACK.email) input.value = TRACK.email;
-  setTimeout(() => input.focus(), 300);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') validateEmail(); });
-}
-
-function validateEmail() {
-  const input = document.getElementById('emailInput');
-  const error = document.getElementById('emailError');
-  const btn = document.getElementById('emailBtn');
-  const email = input.value.trim().toLowerCase();
-
-  if (!email) {
-    input.classList.add('error');
-    error.textContent = "L'adresse email est obligatoire.";
-    return;
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    input.classList.add('error');
-    error.textContent = "Format d'email invalide.";
-    return;
-  }
-
-  input.classList.remove('error');
-  error.textContent = '';
-  btn.disabled = true;
-  btn.textContent = 'Vérification…';
-
-  const cbName = 'emailCheck_' + Date.now();
-  window[cbName] = function(data) {
-    delete window[cbName];
-    const s = document.getElementById(cbName);
-    if (s) s.remove();
-
-    btn.disabled = false;
-    btn.textContent = "C'est parti ! 🚀";
-
-    if (data && data.status === 'ok' && data.found === true) {
-      const previousEmail = TRACK.email;
-      if (previousEmail && previousEmail !== data.email) {
-        resetAll();
-      }
-      TRACK.email = data.email;
-      TRACK.classe = data.classe || '';
-      localStorage.setItem('student_email', data.email);
-      localStorage.setItem('student_classe', data.classe || '');
-
-      const modal = document.getElementById('emailModal');
-      modal.classList.add('closing');
-      setTimeout(() => modal.classList.add('hidden'), 250);
-      startGlobalTimer();
-      showWelcome();
-    } else {
-      input.classList.add('error');
-      error.innerHTML = "⚠️ Cette adresse email n'est pas enregistrée.<br><small style='color:var(--text-dim);'>Vérifie l'orthographe ou demande à ton professeur de t'ajouter à la liste.</small>";
-    }
-  };
-
-  const script = document.createElement('script');
-  script.id = cbName;
-  script.src = `${TRACKING.scriptUrl}?action=check_email&email=${encodeURIComponent(email)}&callback=${cbName}`;
-  script.onerror = function() {
-    delete window[cbName]; script.remove();
-    btn.disabled = false;
-    btn.textContent = "C'est parti ! 🚀";
-    error.textContent = "⚠️ Erreur de connexion. Réessaie dans quelques secondes.";
-  };
-  document.body.appendChild(script);
-}
 
 // ============================================================
-// INIT — Toujours demander l'email au lancement
+// INIT
 // ============================================================
 showEmailModal();
-
 </script>
 </body>
 </html>
